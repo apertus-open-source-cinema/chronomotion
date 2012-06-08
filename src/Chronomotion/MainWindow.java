@@ -51,6 +51,10 @@ import javax.swing.JRadioButton;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.UIManager;
 import java.awt.Color;
+import java.awt.GridLayout;
+import javax.swing.JTextField;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MainWindow implements Runnable {
 
@@ -81,8 +85,8 @@ public class MainWindow implements Runnable {
 		// setLayout(null);
 
 		JFrame frame = new JFrame();
-		frame.setBounds(10, 106, 591, 464);
-		frame.getContentPane().setLayout(new MigLayout("", "[205px][grow]", "[134px,grow]"));
+		frame.setBounds(10, 106, 686, 603);
+		frame.getContentPane().setLayout(new MigLayout("", "[205px][grow]", "[176.00px][][]"));
 
 		JPanel FastControlPanel = new JPanel();
 		FastControlPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Quick Control", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
@@ -215,6 +219,149 @@ public class MainWindow implements Runnable {
 		lblSpeedTiltDegrees = new JLabel("...");
 		InfoPanel.add(lblSpeedTiltDegrees, "cell 5 1");
 
+		ManuelMotionPanel = new JPanel();
+		ManuelMotionPanel.setBorder(new TitledBorder(null, "Manual Motion", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		frame.getContentPane().add(ManuelMotionPanel, "cell 0 1,alignx left,aligny top");
+		ManuelMotionPanel.setLayout(new GridLayout(0, 1, 0, 0));
+
+		Tilt = new JPanel();
+		Tilt.setBorder(new TitledBorder(null, "Tilt", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		ManuelMotionPanel.add(Tilt);
+		Tilt.setLayout(new GridLayout(0, 2, 0, 0));
+
+		label_2 = new JLabel("Speed");
+		Tilt.add(label_2);
+
+		label_3 = new JLabel("Ratio");
+		Tilt.add(label_3);
+
+		ManualMotionTiltSpeed = new JTextField();
+		ManualMotionTiltSpeed.setText("0");
+		ManualMotionTiltSpeed.setColumns(10);
+		Tilt.add(ManualMotionTiltSpeed);
+
+		ManualMotionTiltRatio = new JTextField();
+		ManualMotionTiltRatio.setText("1");
+		ManualMotionTiltRatio.setColumns(10);
+		Tilt.add(ManualMotionTiltRatio);
+
+		Pan = new JPanel();
+		Pan.setBorder(new TitledBorder(null, "Pan", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		ManuelMotionPanel.add(Pan);
+		Pan.setLayout(new GridLayout(0, 2, 0, 0));
+
+		lblNewLabel = new JLabel("Speed");
+		Pan.add(lblNewLabel);
+
+		lblNewLabel_1 = new JLabel("Ratio");
+		Pan.add(lblNewLabel_1);
+
+		ManualMotionPanSpeed = new JTextField();
+		ManualMotionPanSpeed.setText("0");
+		Pan.add(ManualMotionPanSpeed);
+		ManualMotionPanSpeed.setColumns(10);
+
+		ManualMotionPanRatio = new JTextField();
+		ManualMotionPanRatio.setText("1");
+		Pan.add(ManualMotionPanRatio);
+		ManualMotionPanRatio.setColumns(10);
+
+		panel_1 = new JPanel();
+		panel_1.setBorder(new TitledBorder(null, "Control", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		ManuelMotionPanel.add(panel_1);
+		panel_1.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+
+		ManualMotionStart = new JButton("Start");
+		ManualMotionStart.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mousePressed(java.awt.event.MouseEvent evt) {
+				ManualMotionStartPressed(evt);
+			}
+		});
+		panel_1.add(ManualMotionStart);
+
+		ManualMotionStop = new JButton("Stop");
+		ManualMotionStop.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mousePressed(java.awt.event.MouseEvent evt) {
+				ManualMotionStopPressed(evt);
+			}
+		});
+		ManualMotionStop.setEnabled(false);
+		panel_1.add(ManualMotionStop);
+
+		GOTOPanel = new JPanel();
+		GOTOPanel.setBorder(new TitledBorder(null, "Goto", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		frame.getContentPane().add(GOTOPanel, "flowx,cell 1 1,alignx left,aligny top");
+		GOTOPanel.setLayout(new MigLayout("", "[18px][86px][57px][55px]", "[23px][23px]"));
+
+		lblPan_1 = new JLabel("Pan");
+		GOTOPanel.add(lblPan_1, "cell 0 0,alignx center,aligny center");
+
+		GOTOPanPos = new JTextField();
+		GOTOPanel.add(GOTOPanPos, "cell 1 0,alignx center,aligny center");
+		GOTOPanPos.setText("0");
+		GOTOPanPos.setColumns(10);
+
+		GotoPanStart = new JButton("Start");
+		GotoPanStart.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				GotoPanStartMousePressed(e);
+			}
+		});
+		GOTOPanel.add(GotoPanStart, "cell 2 0,alignx center,aligny center");
+
+		GotoPanStop = new JButton("Stop");
+		GotoPanStop.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				GotoPanStopMousePressed(e);
+			}
+		});
+		GOTOPanel.add(GotoPanStop, "cell 3 0,alignx center,aligny center");
+		GotoPanStop.setEnabled(false);
+
+		lblTilt_1 = new JLabel("Tilt");
+		GOTOPanel.add(lblTilt_1, "cell 0 1,alignx center,aligny center");
+
+		GOTOTiltPos = new JTextField();
+		GOTOPanel.add(GOTOTiltPos, "cell 1 1,alignx center,aligny center");
+		GOTOTiltPos.setText("0");
+		GOTOTiltPos.setColumns(10);
+
+		GotoTiltStart = new JButton("Start");
+		GotoTiltStart.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				GotoTiltStartMousePressed(e);
+			}
+		});
+		GOTOPanel.add(GotoTiltStart, "cell 2 1,alignx center,aligny center");
+
+		GotoTiltStop = new JButton("Stop");
+		GotoTiltStop.addMouseListener(new MouseAdapter() {
+			public void mousePressed(MouseEvent e) {
+				GotoTiltStopMousePressed(e);
+			}
+		});
+		GotoTiltStop.setEnabled(false);
+		GOTOPanel.add(GotoTiltStop, "cell 3 1,alignx center,aligny center");
+		
+		TimelapseParameterPanel = new JPanel();
+		TimelapseParameterPanel.setBorder(new TitledBorder(null, "Time lapse parameters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		frame.getContentPane().add(TimelapseParameterPanel, "cell 1 2,alignx left,aligny top");
+		TimelapseParameterPanel.setLayout(new MigLayout("", "[140px][140px]", "[20px][20px]"));
+		
+		lblNewLabel_2 = new JLabel("Shutter Period [seconds]");
+		TimelapseParameterPanel.add(lblNewLabel_2, "cell 0 0,grow");
+		
+		textField = new JTextField();
+		TimelapseParameterPanel.add(textField, "cell 1 0,grow");
+		textField.setColumns(10);
+		
+		lblNewLabel_3 = new JLabel("Post Shutter Delay [seconds]");
+		TimelapseParameterPanel.add(lblNewLabel_3, "cell 0 1,grow");
+		
+		textField_1 = new JTextField();
+		TimelapseParameterPanel.add(textField_1, "cell 1 1,grow");
+		textField_1.setColumns(10);
+
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
 
@@ -260,6 +407,34 @@ public class MainWindow implements Runnable {
 	int last_pan_steps_per_second = 0;
 	int last_tilt_steps_per_second = 0;
 	long _last_time_stamp;
+	private JPanel ManuelMotionPanel;
+	private JPanel Pan;
+	private JLabel lblNewLabel;
+	private JLabel lblNewLabel_1;
+	private JTextField ManualMotionPanSpeed;
+	private JTextField ManualMotionPanRatio;
+	private JPanel Tilt;
+	private JLabel label_2;
+	private JLabel label_3;
+	private JTextField ManualMotionTiltSpeed;
+	private JTextField ManualMotionTiltRatio;
+	private JButton ManualMotionStart;
+	private JButton ManualMotionStop;
+	private JPanel panel_1;
+	private JPanel GOTOPanel;
+	private JLabel lblPan_1;
+	private JLabel lblTilt_1;
+	private JTextField GOTOPanPos;
+	private JTextField GOTOTiltPos;
+	private JButton GotoPanStart;
+	private JButton GotoPanStop;
+	private JButton GotoTiltStart;
+	private JButton GotoTiltStop;
+	private JPanel TimelapseParameterPanel;
+	private JLabel lblNewLabel_2;
+	private JTextField textField;
+	private JLabel lblNewLabel_3;
+	private JTextField textField_1;
 
 	private void UpdateInforomationPanel() {
 		long now = System.currentTimeMillis();
@@ -372,4 +547,51 @@ public class MainWindow implements Runnable {
 		Parent.GetMerlinController().StopMotor(AXIS.PAN);
 		Parent.WriteLogtoConsole("Stopped Quick Control: LEFT");
 	}
+
+	private void ManualMotionStartPressed(java.awt.event.MouseEvent evt) {
+		Parent.GetMerlinController().RotateAxis(AXIS.PAN, ManualMotionPanSpeed.getText(), Integer.parseInt(ManualMotionPanRatio.getText()), DIRECTION.CCW);
+		Parent.GetMerlinController().RotateAxis(AXIS.TILT, ManualMotionTiltSpeed.getText(), Integer.parseInt(ManualMotionTiltRatio.getText()), DIRECTION.CCW);
+
+		ManualMotionStop.setEnabled(true);
+		ManualMotionStart.setEnabled(false);
+		Parent.WriteLogtoConsole("Started Manual Motion with Pan(S: " + ManualMotionPanSpeed.getText() + "|R: " + Integer.parseInt(ManualMotionPanRatio.getText()) + ") Tilt(S: " + ManualMotionTiltSpeed.getText() + "|R: " + Integer.parseInt(ManualMotionTiltRatio.getText()) + ")");
+	}
+
+	private void ManualMotionStopPressed(java.awt.event.MouseEvent evt) {
+		Parent.GetMerlinController().StopMotor(AXIS.PAN);
+		Parent.GetMerlinController().StopMotor(AXIS.TILT);
+
+		ManualMotionStop.setEnabled(false);
+		ManualMotionStart.setEnabled(true);
+		Parent.WriteLogtoConsole("Stopped Manual Motion");
+	}
+
+	private void GotoPanStartMousePressed(java.awt.event.MouseEvent evt) {
+		Parent.GetMerlinController().GotoPosition(AXIS.PAN, Float.parseFloat(GOTOPanPos.getText()));
+		GotoPanStop.setEnabled(true);
+		GotoPanStart.setEnabled(false);
+		Parent.WriteLogtoConsole("Started Pan GOTO Position: " + Float.parseFloat(GOTOPanPos.getText()));
+	}
+
+	private void GotoTiltStartMousePressed(java.awt.event.MouseEvent evt) {
+		Parent.GetMerlinController().GotoPosition(AXIS.TILT, Float.parseFloat(GOTOTiltPos.getText()));
+		GotoTiltStop.setEnabled(true);
+		GotoTiltStart.setEnabled(false);
+		Parent.WriteLogtoConsole("Started Tilt GOTO Position: " + Float.parseFloat(GOTOPanPos.getText()));
+	}
+
+	private void GotoPanStopMousePressed(java.awt.event.MouseEvent evt) {
+		Parent.GetMerlinController().GotoPosition(AXIS.PAN, Float.parseFloat(GOTOPanPos.getText()));
+		GotoPanStart.setEnabled(true);
+		GotoPanStop.setEnabled(false);
+		Parent.WriteLogtoConsole("Stopped Pan GOTO");
+	}
+
+	private void GotoTiltStopMousePressed(java.awt.event.MouseEvent evt) {
+		Parent.GetMerlinController().GotoPosition(AXIS.TILT, Float.parseFloat(GOTOTiltPos.getText()));
+		GotoTiltStop.setEnabled(false);
+		GotoTiltStart.setEnabled(true);
+		Parent.WriteLogtoConsole("Stopped Tilt GOTO");
+	}
+
 }

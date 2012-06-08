@@ -36,6 +36,7 @@ import java.util.Calendar;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
+import javax.swing.UIManager;
 
 public class Chronomotion {
 
@@ -49,6 +50,11 @@ public class Chronomotion {
 	 * Launch the application.
 	 */
 	public static void main(final String[] args) {
+		// Use System Look & Feel
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+		}
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
