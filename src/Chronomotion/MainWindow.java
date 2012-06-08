@@ -55,6 +55,10 @@ import java.awt.GridLayout;
 import javax.swing.JTextField;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 
 public class MainWindow implements Runnable {
 
@@ -78,6 +82,7 @@ public class MainWindow implements Runnable {
 	private JLabel label_1;
 	private JLabel lblSpeedPanDegrees;
 	private JLabel lblSpeedTiltDegrees;
+	private Timeline timeline1;
 
 	public MainWindow(Chronomotion parent) {
 
@@ -85,8 +90,8 @@ public class MainWindow implements Runnable {
 		// setLayout(null);
 
 		JFrame frame = new JFrame();
-		frame.setBounds(10, 106, 686, 603);
-		frame.getContentPane().setLayout(new MigLayout("", "[205px][grow]", "[176.00px][][]"));
+		frame.setBounds(10, 106, 840, 728);
+		frame.getContentPane().setLayout(new MigLayout("", "[205px][grow]", "[176.00px][][grow]"));
 
 		JPanel FastControlPanel = new JPanel();
 		FastControlPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Quick Control", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
@@ -184,44 +189,9 @@ public class MainWindow implements Runnable {
 
 		FastControlPanel.add(rdbtnSpeedFast, gbc_rdbtnSpeedFast);
 
-		InfoPanel = new JPanel();
-		InfoPanel.setBorder(new TitledBorder(null, "Information", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		frame.getContentPane().add(InfoPanel, "cell 1 0,alignx left,aligny top");
-		InfoPanel.setLayout(new MigLayout("", "[60.00][][][][][]", "[][]"));
-
-		lblPosition = new JLabel("Position");
-		InfoPanel.add(lblPosition, "cell 0 0");
-
-		lblPan = new JLabel("Pan");
-		InfoPanel.add(lblPan, "cell 1 0");
-
-		lblPosPanDegrees = new JLabel("...");
-		InfoPanel.add(lblPosPanDegrees, "cell 2 0");
-
-		lblTilt = new JLabel("Tilt");
-		InfoPanel.add(lblTilt, "cell 4 0");
-
-		lblPosTiltDegrees = new JLabel("...");
-		InfoPanel.add(lblPosTiltDegrees, "cell 5 0");
-
-		lblSpeed = new JLabel("Speed");
-		InfoPanel.add(lblSpeed, "cell 0 1");
-
-		label = new JLabel("Pan");
-		InfoPanel.add(label, "cell 1 1");
-
-		lblSpeedPanDegrees = new JLabel("...");
-		InfoPanel.add(lblSpeedPanDegrees, "cell 2 1");
-
-		label_1 = new JLabel("Tilt");
-		InfoPanel.add(label_1, "cell 4 1");
-
-		lblSpeedTiltDegrees = new JLabel("...");
-		InfoPanel.add(lblSpeedTiltDegrees, "cell 5 1");
-
 		ManuelMotionPanel = new JPanel();
 		ManuelMotionPanel.setBorder(new TitledBorder(null, "Manual Motion", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		frame.getContentPane().add(ManuelMotionPanel, "cell 0 1,alignx left,aligny top");
+		frame.getContentPane().add(ManuelMotionPanel, "cell 1 0,alignx left,aligny top");
 		ManuelMotionPanel.setLayout(new GridLayout(0, 1, 0, 0));
 
 		Tilt = new JPanel();
@@ -288,6 +258,41 @@ public class MainWindow implements Runnable {
 		ManualMotionStop.setEnabled(false);
 		panel_1.add(ManualMotionStop);
 
+		InfoPanel = new JPanel();
+		InfoPanel.setBorder(new TitledBorder(null, "Information", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		frame.getContentPane().add(InfoPanel, "cell 0 1,alignx left,aligny top");
+		InfoPanel.setLayout(new MigLayout("", "[60.00][][][][][]", "[][]"));
+
+		lblPosition = new JLabel("Position");
+		InfoPanel.add(lblPosition, "cell 0 0");
+
+		lblPan = new JLabel("Pan");
+		InfoPanel.add(lblPan, "cell 1 0");
+
+		lblPosPanDegrees = new JLabel("...");
+		InfoPanel.add(lblPosPanDegrees, "cell 2 0");
+
+		lblTilt = new JLabel("Tilt");
+		InfoPanel.add(lblTilt, "cell 4 0");
+
+		lblPosTiltDegrees = new JLabel("...");
+		InfoPanel.add(lblPosTiltDegrees, "cell 5 0");
+
+		lblSpeed = new JLabel("Speed");
+		InfoPanel.add(lblSpeed, "cell 0 1");
+
+		label = new JLabel("Pan");
+		InfoPanel.add(label, "cell 1 1");
+
+		lblSpeedPanDegrees = new JLabel("...");
+		InfoPanel.add(lblSpeedPanDegrees, "cell 2 1");
+
+		label_1 = new JLabel("Tilt");
+		InfoPanel.add(label_1, "cell 4 1");
+
+		lblSpeedTiltDegrees = new JLabel("...");
+		InfoPanel.add(lblSpeedTiltDegrees, "cell 5 1");
+
 		GOTOPanel = new JPanel();
 		GOTOPanel.setBorder(new TitledBorder(null, "Goto", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		frame.getContentPane().add(GOTOPanel, "flowx,cell 1 1,alignx left,aligny top");
@@ -342,25 +347,125 @@ public class MainWindow implements Runnable {
 		});
 		GotoTiltStop.setEnabled(false);
 		GOTOPanel.add(GotoTiltStop, "cell 3 1,alignx center,aligny center");
-		
+
 		TimelapseParameterPanel = new JPanel();
 		TimelapseParameterPanel.setBorder(new TitledBorder(null, "Time lapse parameters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		frame.getContentPane().add(TimelapseParameterPanel, "cell 1 2,alignx left,aligny top");
+		frame.getContentPane().add(TimelapseParameterPanel, "cell 0 2,alignx left,aligny top");
 		TimelapseParameterPanel.setLayout(new MigLayout("", "[140px][140px]", "[20px][20px]"));
-		
+
 		lblNewLabel_2 = new JLabel("Shutter Period [seconds]");
 		TimelapseParameterPanel.add(lblNewLabel_2, "cell 0 0,grow");
-		
+
 		textField = new JTextField();
 		TimelapseParameterPanel.add(textField, "cell 1 0,grow");
 		textField.setColumns(10);
-		
+
 		lblNewLabel_3 = new JLabel("Post Shutter Delay [seconds]");
 		TimelapseParameterPanel.add(lblNewLabel_3, "cell 0 1,grow");
-		
+
 		textField_1 = new JTextField();
 		TimelapseParameterPanel.add(textField_1, "cell 1 1,grow");
 		textField_1.setColumns(10);
+
+		AnimationPanel = new JPanel();
+		AnimationPanel.setBorder(new TitledBorder(null, "Animation", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		frame.getContentPane().add(AnimationPanel, "cell 1 2,grow");
+		AnimationPanel.setLayout(new MigLayout("", "[][][][][][][][][grow][grow][][19.00]", "[][][grow][]"));
+
+		lblNewLabel_4 = new JLabel("Time:");
+		AnimationPanel.add(lblNewLabel_4, "cell 0 0");
+
+		TimelineTime = new JLabel("...");
+		AnimationPanel.add(TimelineTime, "cell 1 0,aligny center");
+
+		lblState = new JLabel("State:");
+		AnimationPanel.add(lblState, "cell 2 0");
+
+		State = new JLabel("...");
+		AnimationPanel.add(State, "cell 3 0");
+
+		lblTime = new JLabel("Time");
+		AnimationPanel.add(lblTime, "cell 8 0");
+
+		lblValue = new JLabel("Value");
+		AnimationPanel.add(lblValue, "cell 9 0");
+
+		lblTaget = new JLabel("Taget:");
+		AnimationPanel.add(lblTaget, "cell 0 1");
+
+		TimelineTarget = new JLabel("...");
+		AnimationPanel.add(TimelineTarget, "cell 1 1,aligny baseline");
+
+		TimelineStart = new JButton("start");
+		TimelineStart.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				TimelineStartPressed(e);
+			}
+		});
+		AnimationPanel.add(TimelineStart, "cell 2 1");
+
+		TimelineReset = new JButton("reset");
+		TimelineReset.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				TimelineResetPressed(e);
+			}
+		});
+		TimelineReset.setEnabled(false);
+		AnimationPanel.add(TimelineReset, "cell 3 1 2 1");
+
+		TimelinePrevKeyframe = new JButton("<");
+		TimelinePrevKeyframe.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				TimelinePrevKeyframePressed(e);
+			}
+		});
+		AnimationPanel.add(TimelinePrevKeyframe, "cell 5 1");
+
+		TimelineNextKeyframe = new JButton(">");
+		TimelineNextKeyframe.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				TimelineNextKeyframePressed(e);
+			}
+		});
+		AnimationPanel.add(TimelineNextKeyframe, "cell 6 1");
+
+		TimelineEditTime = new JTextField();
+		AnimationPanel.add(TimelineEditTime, "cell 8 1,growx");
+		TimelineEditTime.setColumns(10);
+
+		TimelineEditValue = new JTextField();
+		AnimationPanel.add(TimelineEditValue, "cell 9 1,growx");
+		TimelineEditValue.setColumns(10);
+
+		TimelineEdit = new JButton("edit");
+		TimelineEdit.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				TimelineEditPressed(e);
+			}
+		});
+		AnimationPanel.add(TimelineEdit, "cell 10 1,aligny top");
+
+		scrollPane = new JScrollPane();
+		AnimationPanel.add(scrollPane, "cell 0 2 2 1,alignx left,growy");
+
+		ChannelSelector = new JTree();
+		javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("Remotehead");
+		javax.swing.tree.DefaultMutableTreeNode treeNode2 = new javax.swing.tree.DefaultMutableTreeNode("Pitch");
+		treeNode1.add(treeNode2);
+		treeNode2 = new javax.swing.tree.DefaultMutableTreeNode("Yaw");
+		treeNode1.add(treeNode2);
+		ChannelSelector.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+		ChannelSelector.setCellRenderer(null);
+		ChannelSelector.setName("jTree1"); // NOI18N
+		scrollPane.setRowHeaderView(ChannelSelector);
+
+		scrollPane_1 = new JScrollPane();
+		AnimationPanel.add(scrollPane_1, "cell 2 2 9 1,grow");
 
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -384,10 +489,53 @@ public class MainWindow implements Runnable {
 		});
 		mnNewMenu.add(mntmNewMenuItem_2);
 
+		timeline1 = new Timeline();
+		timeline1.setName("timeline1"); // NOI18N
+		// timeline1.SetParent(this);
+		scrollPane_1.setViewportView(timeline1);
+
+		SliderScaleY = new JSlider();
+		SliderScaleY.setPaintTicks(true);
+		SliderScaleY.setOrientation(SwingConstants.VERTICAL);
+		AnimationPanel.add(SliderScaleY, "cell 11 2");
+		SliderScaleY.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+            	SliderScaleYUpdate();
+            }
+        });
+        SliderScaleY.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+            	SliderScaleYUpdate();
+            }
+        });
+        SliderScaleY.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+            	SliderScaleYUpdate();
+            }
+        });
+
+		SliderScaleX = new JSlider();
+		SliderScaleX.setPaintTicks(true);
+		AnimationPanel.add(SliderScaleX, "cell 2 3 9 1,growx");
+		SliderScaleX.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+			public void mouseDragged(java.awt.event.MouseEvent evt) {
+				SliderScaleXUpdate();
+			}
+		});
+		SliderScaleX.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+			public void propertyChange(java.beans.PropertyChangeEvent evt) {
+				SliderScaleXUpdate();
+			}
+		});
+		SliderScaleX.addKeyListener(new java.awt.event.KeyAdapter() {
+			public void keyReleased(java.awt.event.KeyEvent evt) {
+				SliderScaleXUpdate();
+			}
+		});
+
 		frame.setVisible(true);
 		Animator = new Thread(this);
 		Animator.start();
-
 	}
 
 	float _animator_fps = 1;
@@ -435,6 +583,20 @@ public class MainWindow implements Runnable {
 	private JTextField textField;
 	private JLabel lblNewLabel_3;
 	private JTextField textField_1;
+	private JPanel AnimationPanel;
+	private JLabel lblNewLabel_4;
+	private JLabel lblTaget;
+	private JLabel TimelineTime;
+	private JLabel TimelineTarget;
+	private JScrollPane scrollPane;
+	private JTree ChannelSelector;
+	private JLabel lblState;
+	private JLabel State;
+	private JButton TimelineStart;
+	private JButton TimelineReset;
+	private JButton TimelinePrevKeyframe;
+	private JButton TimelineNextKeyframe;
+	private JScrollPane scrollPane_1;
 
 	private void UpdateInforomationPanel() {
 		long now = System.currentTimeMillis();
@@ -476,11 +638,10 @@ public class MainWindow implements Runnable {
 				// tilt_sidereal.setText(MerlinController.GetSiderealRate(AXIS.TILT)
 				// +
 				// "");
-				/*
-				 * if (timeline1 != null) {
-				 * Timeline_Time.setText(timeline1.GetCurrentTime() + "");
-				 * Timeline_Target.setText(timeline1.GetTargetTilt() + ""); }
-				 */
+				if (timeline1 != null) {
+					TimelineTime.setText(timeline1.GetCurrentTime() + "");
+					TimelineTarget.setText(timeline1.GetTargetTilt() + "");
+				}
 			}
 		}
 	}
@@ -594,4 +755,68 @@ public class MainWindow implements Runnable {
 		Parent.WriteLogtoConsole("Stopped Tilt GOTO");
 	}
 
+	private void TimelineStartPressed(java.awt.event.MouseEvent evt) {
+		timeline1.ChangeState(STATE.RUNNING);
+		TimelineReset.setEnabled(true);
+		TimelineStart.setEnabled(false);
+	}
+
+	private void TimelineResetPressed(java.awt.event.MouseEvent evt) {
+		timeline1.ChangeState(STATE.STOPPED);
+		TimelineReset.setEnabled(false);
+		TimelineStart.setEnabled(true);
+	}
+
+	private int highlightindex = 0;
+	private JLabel lblTime;
+	private JLabel lblValue;
+	private JTextField TimelineEditTime;
+	private JTextField TimelineEditValue;
+	private JButton TimelineEdit;
+	private JSlider SliderScaleX;
+	private JSlider SliderScaleY;
+
+	private void TimelineNextKeyframePressed(java.awt.event.MouseEvent evt) {
+		highlightindex++;
+		if (highlightindex < 0) {
+			highlightindex = 0;
+		}
+		if (highlightindex > timeline1.GetNumberOfKeyframes() - 1) {
+			highlightindex = timeline1.GetNumberOfKeyframes() - 1;
+		}
+		timeline1.SetKeyframeHighlight(highlightindex);
+
+		TimelineEditValue.setText(timeline1.GetParameter(highlightindex, "tilt") + "");
+		TimelineEditTime.setText(timeline1.GetTime(highlightindex) + "");
+	}
+
+	private void TimelinePrevKeyframePressed(java.awt.event.MouseEvent evt) {
+		--highlightindex;
+		if (highlightindex < 0) {
+			highlightindex = 0;
+		}
+		if (highlightindex > timeline1.GetNumberOfKeyframes() - 1) {
+			highlightindex = timeline1.GetNumberOfKeyframes() - 1;
+		}
+		timeline1.SetKeyframeHighlight(highlightindex);
+
+		TimelineEditValue.setText(timeline1.GetParameter(highlightindex, "tilt") + "");
+		TimelineEditTime.setText(timeline1.GetTime(highlightindex) + "");
+	}
+
+	private void TimelineEditPressed(java.awt.event.MouseEvent evt) {
+		timeline1.SetParameter(highlightindex, "tilt", Float.parseFloat(TimelineEditValue.getText()));
+		timeline1.SetTime(highlightindex, Float.parseFloat(TimelineEditTime.getText()));
+		timeline1.Redraw();
+	}
+
+	private void SliderScaleXUpdate() {
+		timeline1.setScaleX(SliderScaleX.getValue());
+		timeline1.Redraw();
+	}
+
+	private void SliderScaleYUpdate() {
+		timeline1.setScaleY(SliderScaleY.getValue());
+		timeline1.Redraw();
+	}
 }

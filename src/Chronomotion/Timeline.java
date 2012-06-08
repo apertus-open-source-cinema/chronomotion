@@ -1,4 +1,4 @@
-/*! Copyright (C) 2011 All Rights Reserved
+/*! Copyright (C) 2012 All Rights Reserved
  *! Author : Sebastian Pichelhofer
  *! Description:
 -----------------------------------------------------------------------------**
@@ -22,6 +22,7 @@
  *!   * The freedom to study how the program works, and change it to make it do what you wish (freedom 1). Access to the source code is a precondition for this.
  *!   * The freedom to redistribute copies so you can help your neighbor (freedom 2).
  *!   * The freedom to distribute copies of your modified versions to others (freedom 3). By doing this you can give the whole community a chance to benefit from your changes. Access to the source code is a precondition for this.
+
 -----------------------------------------------------------------------------**/
 package Chronomotion;
 
@@ -356,30 +357,30 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()));
 			Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
 			CurrentPhase = HEADPHASE.MOVING;
-			//Parent.SetPhaseState("Moving");
+			// Parent.SetPhaseState("Moving");
 			System.out.println("NextShootParameter = " + NextShootParameter);
 		} else if (newstate == HEADPHASE.POSTSHOOTDELAY) {
 			// Calculate when to trigger the shutter release next
 			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(this.GetCurrentTime());
-			//Parent.SetPhaseState("Post Shoot Delay");
+			// Parent.SetPhaseState("Post Shoot Delay");
 			CurrentPhase = HEADPHASE.POSTSHOOTDELAY;
 			System.out.println("NextTargetShutterReleaseTime = " + NextTargetShutterReleaseTime);
 		} else if (newstate == HEADPHASE.RELEASINGSHUTTER) {
 			// twice --- why odes it only work this way?
 			Parent.GetMerlinController().TriggerShutter();
 			Parent.GetMerlinController().TriggerShutter();
-			//Parent.SetPhaseState("Triggering Shutter");
+			// Parent.SetPhaseState("Triggering Shutter");
 			System.out.println("snap!");
 			CurrentPhase = HEADPHASE.RELEASINGSHUTTER;
 		} else if (newstate == HEADPHASE.WAITING) {
-			//Parent.SetPhaseState("Waiting");
+			// Parent.SetPhaseState("Waiting");
 			CurrentPhase = HEADPHASE.WAITING;
 		} else if ((this.GetCurrentHeadPhase().equals(HEADPHASE.STOPPED)) && (newstate == HEADPHASE.MOVING)) {
 			// Initial start
 			float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()));
 			Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
 			CurrentPhase = HEADPHASE.MOVING;
-			//Parent.SetPhaseState("Moving");
+			// Parent.SetPhaseState("Moving");
 			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(this.GetCurrentTime());
 			System.out.println("NextTargetShutterReleaseTime = " + NextTargetShutterReleaseTime);
 			System.out.println("NextShootParameter = " + NextShootParameter);
