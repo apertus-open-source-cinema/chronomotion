@@ -97,10 +97,10 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		});
 	}
 
-	/*
-	 * public void SetParent(MerlinControlTest01View parent) { this.Parent =
-	 * parent; }
-	 */
+	public void SetParent(Chronomotion parent) {
+		this.Parent = parent;
+	}
+
 	public void SetEvaluateTime(long EvalTime) {
 		this.setEvaluateTime(EvalTime);
 	}

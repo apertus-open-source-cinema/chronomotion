@@ -34,6 +34,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.JButton;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -59,6 +61,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 public class MainWindow implements Runnable {
 
@@ -356,16 +360,65 @@ public class MainWindow implements Runnable {
 		lblNewLabel_2 = new JLabel("Shutter Period [seconds]");
 		TimelapseParameterPanel.add(lblNewLabel_2, "cell 0 0,grow");
 
-		textField = new JTextField();
-		TimelapseParameterPanel.add(textField, "cell 1 0,grow");
-		textField.setColumns(10);
+		ShutterPeriod = new JTextField();
+		ShutterPeriod.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent evt) {
+				ShutterPeriodUpdate();
+			}
+		});
+		ShutterPeriod.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ShutterPeriodUpdate();
+			}
+		});
+		ShutterPeriod.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				ShutterPeriodUpdate();
+			}
+
+			public void removeUpdate(DocumentEvent e) {
+				ShutterPeriodUpdate();
+			}
+
+			public void insertUpdate(DocumentEvent e) {
+				ShutterPeriodUpdate();
+			}
+		});
+
+		ShutterPeriod.setText("15");
+		TimelapseParameterPanel.add(ShutterPeriod, "cell 1 0,grow");
+		ShutterPeriod.setColumns(10);
 
 		lblNewLabel_3 = new JLabel("Post Shutter Delay [seconds]");
 		TimelapseParameterPanel.add(lblNewLabel_3, "cell 0 1,grow");
 
-		textField_1 = new JTextField();
-		TimelapseParameterPanel.add(textField_1, "cell 1 1,grow");
-		textField_1.setColumns(10);
+		PostShutterDelay = new JTextField();
+		PostShutterDelay.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				PostShutterDelayUpdate();
+			}
+		});
+		PostShutterDelay.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent arg0) {
+				PostShutterDelayUpdate();
+			}
+		});
+		PostShutterDelay.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				PostShutterDelayUpdate();
+			}
+
+			public void removeUpdate(DocumentEvent e) {
+				PostShutterDelayUpdate();
+			}
+
+			public void insertUpdate(DocumentEvent e) {
+				PostShutterDelayUpdate();
+			}
+		});
+		PostShutterDelay.setText("2");
+		TimelapseParameterPanel.add(PostShutterDelay, "cell 1 1,grow");
+		PostShutterDelay.setColumns(10);
 
 		AnimationPanel = new JPanel();
 		AnimationPanel.setBorder(new TitledBorder(null, "Animation", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -491,7 +544,7 @@ public class MainWindow implements Runnable {
 
 		timeline1 = new Timeline();
 		timeline1.setName("timeline1"); // NOI18N
-		// timeline1.SetParent(this);
+		timeline1.SetParent(Parent);
 		scrollPane_1.setViewportView(timeline1);
 
 		SliderScaleY = new JSlider();
@@ -499,20 +552,20 @@ public class MainWindow implements Runnable {
 		SliderScaleY.setOrientation(SwingConstants.VERTICAL);
 		AnimationPanel.add(SliderScaleY, "cell 11 2");
 		SliderScaleY.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseDragged(java.awt.event.MouseEvent evt) {
-            	SliderScaleYUpdate();
-            }
-        });
-        SliderScaleY.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-            	SliderScaleYUpdate();
-            }
-        });
-        SliderScaleY.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-            	SliderScaleYUpdate();
-            }
-        });
+			public void mouseDragged(java.awt.event.MouseEvent evt) {
+				SliderScaleYUpdate();
+			}
+		});
+		SliderScaleY.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+			public void propertyChange(java.beans.PropertyChangeEvent evt) {
+				SliderScaleYUpdate();
+			}
+		});
+		SliderScaleY.addKeyListener(new java.awt.event.KeyAdapter() {
+			public void keyReleased(java.awt.event.KeyEvent evt) {
+				SliderScaleYUpdate();
+			}
+		});
 
 		SliderScaleX = new JSlider();
 		SliderScaleX.setPaintTicks(true);
@@ -580,9 +633,9 @@ public class MainWindow implements Runnable {
 	private JButton GotoTiltStop;
 	private JPanel TimelapseParameterPanel;
 	private JLabel lblNewLabel_2;
-	private JTextField textField;
+	private JTextField ShutterPeriod;
 	private JLabel lblNewLabel_3;
-	private JTextField textField_1;
+	private JTextField PostShutterDelay;
 	private JPanel AnimationPanel;
 	private JLabel lblNewLabel_4;
 	private JLabel lblTaget;
@@ -818,5 +871,23 @@ public class MainWindow implements Runnable {
 	private void SliderScaleYUpdate() {
 		timeline1.setScaleY(SliderScaleY.getValue());
 		timeline1.Redraw();
+	}
+
+	private void PostShutterDelayUpdate() {
+		if (!PostShutterDelay.getText().equals("")) {
+			if (timeline1 != null) {
+				timeline1.setPostShootDelay(Float.parseFloat(PostShutterDelay.getText()));
+				timeline1.Redraw();
+			}
+		}
+	}
+
+	private void ShutterPeriodUpdate() {
+		if (!ShutterPeriod.getText().equals("")) {
+			if (timeline1 != null) {
+				timeline1.setTimelapseShutterPeriod(Float.parseFloat(ShutterPeriod.getText()));
+				timeline1.Redraw();
+			}
+		}
 	}
 }
