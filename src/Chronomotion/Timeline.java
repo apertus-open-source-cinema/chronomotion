@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 enum STATE {
@@ -66,6 +68,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	private float PostShootDelay = 1;
 	private Chronomotion Parent;
 	private HEADPHASE CurrentPhase = HEADPHASE.STOPPED;
+	private JLabel PhaseStateLabel;
 
 	public Timeline() {
 		me = this;
@@ -95,6 +98,10 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 				me.Redraw();
 			}
 		});
+	}
+
+	public void SetPhaseStateLabel(JLabel newPhaseStateLabel) {
+		PhaseStateLabel = newPhaseStateLabel;
 	}
 
 	public void SetParent(Chronomotion parent) {
@@ -357,33 +364,37 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()));
 			Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
 			CurrentPhase = HEADPHASE.MOVING;
-			// Parent.SetPhaseState("Moving");
+			PhaseStateLabel.setText("Moving");
 			System.out.println("NextShootParameter = " + NextShootParameter);
 		} else if (newstate == HEADPHASE.POSTSHOOTDELAY) {
 			// Calculate when to trigger the shutter release next
 			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(this.GetCurrentTime());
-			// Parent.SetPhaseState("Post Shoot Delay");
+			PhaseStateLabel.setText("Post Shoot Delay");
 			CurrentPhase = HEADPHASE.POSTSHOOTDELAY;
 			System.out.println("NextTargetShutterReleaseTime = " + NextTargetShutterReleaseTime);
 		} else if (newstate == HEADPHASE.RELEASINGSHUTTER) {
-			// twice --- why odes it only work this way?
+			// twice --- why does it only work this way?
 			Parent.GetMerlinController().TriggerShutter();
 			Parent.GetMerlinController().TriggerShutter();
-			// Parent.SetPhaseState("Triggering Shutter");
+
+			PhaseStateLabel.setText("Triggering Shutter");
 			System.out.println("snap!");
 			CurrentPhase = HEADPHASE.RELEASINGSHUTTER;
 		} else if (newstate == HEADPHASE.WAITING) {
-			// Parent.SetPhaseState("Waiting");
+			PhaseStateLabel.setText("Waiting");
 			CurrentPhase = HEADPHASE.WAITING;
 		} else if ((this.GetCurrentHeadPhase().equals(HEADPHASE.STOPPED)) && (newstate == HEADPHASE.MOVING)) {
 			// Initial start
 			float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()));
 			Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
 			CurrentPhase = HEADPHASE.MOVING;
-			// Parent.SetPhaseState("Moving");
+			PhaseStateLabel.setText("Moving");
 			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(this.GetCurrentTime());
 			System.out.println("NextTargetShutterReleaseTime = " + NextTargetShutterReleaseTime);
 			System.out.println("NextShootParameter = " + NextShootParameter);
+		} else if ((this.GetCurrentHeadPhase().equals(HEADPHASE.MOVING)) && (newstate == HEADPHASE.STOPPED)) {
+			PhaseStateLabel.setText("Idle");
+			// TODO
 		}
 	}
 

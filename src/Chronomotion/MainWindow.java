@@ -434,8 +434,8 @@ public class MainWindow implements Runnable {
 		lblState = new JLabel("State:");
 		AnimationPanel.add(lblState, "cell 2 0");
 
-		State = new JLabel("...");
-		AnimationPanel.add(State, "cell 3 0");
+		TimelineState = new JLabel("...");
+		AnimationPanel.add(TimelineState, "cell 3 0");
 
 		lblTime = new JLabel("Time");
 		AnimationPanel.add(lblTime, "cell 8 0");
@@ -545,6 +545,7 @@ public class MainWindow implements Runnable {
 		timeline1 = new Timeline();
 		timeline1.setName("timeline1"); // NOI18N
 		timeline1.SetParent(Parent);
+		timeline1.SetPhaseStateLabel(TimelineState);
 		scrollPane_1.setViewportView(timeline1);
 
 		SliderScaleY = new JSlider();
@@ -591,11 +592,11 @@ public class MainWindow implements Runnable {
 		Animator.start();
 	}
 
-	float _animator_fps = 1;
+	float _animator_fps = 5;
 
 	public void run() {
 		while (Thread.currentThread() == Animator) {
-			UpdateInforomationPanel();
+			UpdateInformationPanel();
 
 			try {
 				Thread.sleep((int) (1.0f / _animator_fps * 1000));
@@ -644,19 +645,20 @@ public class MainWindow implements Runnable {
 	private JScrollPane scrollPane;
 	private JTree ChannelSelector;
 	private JLabel lblState;
-	private JLabel State;
+	private JLabel TimelineState;
 	private JButton TimelineStart;
 	private JButton TimelineReset;
 	private JButton TimelinePrevKeyframe;
 	private JButton TimelineNextKeyframe;
 	private JScrollPane scrollPane_1;
 
-	private void UpdateInforomationPanel() {
+	private void UpdateInformationPanel() {
 		long now = System.currentTimeMillis();
 		long delta_time = now - _last_time_stamp;
 		_last_time_stamp = now;
 		if (Parent.GetMerlinController() != null) {
 			if (Parent.GetMerlinController().IsConnected()) {
+				
 				Parent.GetMerlinController().ReadAxisPosition(AXIS.PAN);
 				Parent.GetMerlinController().ReadAxisPosition(AXIS.TILT);
 
@@ -709,6 +711,10 @@ public class MainWindow implements Runnable {
 		}
 		return ratio;
 	}
+	
+	public void SetPhaseState(String text) {
+        TimelineState.setText(text);
+    }
 
 	private void RIGHTMousePressed(java.awt.event.MouseEvent evt) {
 		Parent.GetMerlinController().RotateAxis(AXIS.PAN, 128, GetQuickControlSpeed(), DIRECTION.CW);
