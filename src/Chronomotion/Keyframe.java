@@ -76,7 +76,10 @@ public class Keyframe {
 	 * Return one keyframe parameter value by specifying the key as String
 	 */
 	public float GetParameter(String key) {
-		return Parameters.get(key);
+		if (Parameters.containsKey(key)) {
+			return Parameters.get(key);
+		} else
+			return 0.0f;
 	}
 
 	/*

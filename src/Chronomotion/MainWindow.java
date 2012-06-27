@@ -523,9 +523,9 @@ public class MainWindow implements Runnable {
 				if (node == null)
 					return;
 
-				/* retrieve the node that was selected */
-				Object nodeInfo = node.getUserObject();
-				if (nodeInfo.toString() != "Remotehead") {
+				/* retrieve the node that was selected, ignore the root node which just acts as a label currently */
+				if (!node.isRoot()) {
+					Object nodeInfo = node.getUserObject();
 					timeline1.SetActiveChannel(nodeInfo.toString());
 				}
 			}
@@ -713,7 +713,7 @@ public class MainWindow implements Runnable {
 				// "");
 				if (timeline1 != null) {
 					TimelineTime.setText(timeline1.GetCurrentTime() + "");
-					TimelineTarget.setText(timeline1.GetTargetTilt() + "");
+					TimelineTarget.setText(timeline1.GetCurrentTargetValue() + "");
 				}
 			}
 		}
