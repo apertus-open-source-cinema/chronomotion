@@ -69,12 +69,16 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	private Chronomotion Parent;
 	private HEADPHASE CurrentPhase = HEADPHASE.STOPPED;
 	private JLabel PhaseStateLabel;
+	private String ActiveChannel;
 
 	public Timeline() {
 		me = this;
 		CurrentState = STATE.STOPPED;
 		Updater = new Thread(this);
 		Worker = new Thread(this);
+
+		ActiveChannel = "tilt";
+
 		// For Testing
 		Keyframe Frame1 = new Keyframe(0);
 		Frame1.SetParameter("tilt", 0.0f);
@@ -85,6 +89,16 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		Keyframe Frame3 = new Keyframe(50);
 		Frame3.SetParameter("tilt", 30.0f);
 		Keyframes.add(Frame3);
+
+		Keyframe FramePan01 = new Keyframe(0);
+		FramePan01.SetParameter("pan", 0.0f);
+		Keyframes.add(FramePan01);
+		Keyframe FramePan02 = new Keyframe(10);
+		FramePan02.SetParameter("pan", 10.0f);
+		Keyframes.add(FramePan02);
+		Keyframe FramePan03 = new Keyframe(50);
+		FramePan03.SetParameter("pan", 40.0f);
+		Keyframes.add(FramePan03);
 
 		addMouseListener(new java.awt.event.MouseAdapter() {
 
@@ -108,19 +122,30 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		this.Parent = parent;
 	}
 
-	public void SetEvaluateTime(long EvalTime) {
-		this.setEvaluateTime(EvalTime);
-	}
-
 	public void AddKeyFrame(String Channel, float Time, float value) {
 		Keyframe Frame = new Keyframe(Time);
 		Frame.SetParameter(Channel, value);
 		Keyframes.add(Frame);
+
 		OrderKeyframes();
 	}
 
 	/*
-	 * Get Keyframes in the correct order again, sort by time This should be
+	 * The timeline displays only keyframes of one channel at the same time
+	 * Switching channels is traditionally done with a GUI element listing all
+	 * available channels to choose from
+	 */
+
+	public void SetActiveChannel(String newchannel) {
+		this.ActiveChannel = newchannel;
+	}
+
+	public String GetActiveChannel() {
+		return this.ActiveChannel;
+	}
+
+	/*
+	 * Get Keyframes in the correct order again, sort by time. This should be
 	 * called every time a new keyframe is added or an existing keyframes is
 	 * moved in the timeaxis
 	 */
@@ -411,8 +436,46 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		Redraw();
 	}
 
+	/*
+	 * Returns the total number of keyframes in this timeline
+	 */
 	public int GetNumberOfKeyframes() {
 		return Keyframes.size();
+	}
+
+	/*
+	 * Returns the number of keyframes in a specific channel in this timeline
+	 */
+	public int GetNumberOfKeyframes(String channel) {
+		int count = 0;
+		for (int i = 0; i < Keyframes.size(); i++) {
+			if (Keyframes.get(i).HasKey(channel)) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	public Keyframe GetKeyframe(String channel, int index) {
+		// Make sure keyframes are ordered by the time otherwise we will run
+		// into problems
+		this.OrderKeyframes();
+
+		int count = 0;
+
+		// iterate through all keyframes that have a value in the specified
+		// channel (key) return the element at index
+		for (int i = 0; i < Keyframes.size(); i++) {
+			if (Keyframes.get(i).HasKey(channel)) {
+				if (count == index) {
+					return Keyframes.get(i);
+				}
+				count++;
+			}
+		}
+
+		// return null if the element does not exist
+		return null;
 	}
 
 	public float GetParameter(int index, String key) {
@@ -494,28 +557,31 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		g2.drawString("0", margin, this.getHeight() - margin - 2);
 		g2.draw(new Line2D.Double(margin, this.getHeight() - margin - (getScaleY() * 1000), this.getWidth(), this.getHeight() - margin - (getScaleY() * 1000)));
 		g2.drawString("1000", margin, this.getHeight() - margin - (getScaleY() * 1000) - 2);
+
 		// KeyFrame Lines
 		g2.setColor(LineColor);
 		g2.setStroke(new BasicStroke(2.0f));
-		for (int i = 0; i < Keyframes.size() - 1; i++) {
-			int X1 = (int) (margin + Keyframes.get(i).GetTime() * getScaleX());
-			int Y1 = (int) (this.getHeight() - margin - (Keyframes.get(i).GetParameter("tilt") * getScaleY()));
-			int X2 = (int) (margin + Keyframes.get(i + 1).GetTime() * getScaleX());
-			int Y2 = (int) (this.getHeight() - margin - (Keyframes.get(i + 1).GetParameter("tilt") * getScaleY()));
+		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel) - 1; i++) {
+			int X1 = (int) (margin + this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX());
+			int Y1 = (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY()));
+			int X2 = (int) (margin + this.GetKeyframe(this.ActiveChannel, i + 1).GetTime() * getScaleX());
+			int Y2 = (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter(this.ActiveChannel) * getScaleY()));
 			g2.draw(new Line2D.Double(X1, Y1, X2, Y2));
 		}
-		// Keyframe Rectangles
-		for (int i = 0; i < Keyframes.size(); i++) {
-			int X = (int) (margin + (Keyframes.get(i).GetTime() * getScaleX()) - KeyframeRectangleDimension / 2);
-			int Y = (int) (this.getHeight() - margin - (Keyframes.get(i).GetParameter("tilt") * getScaleY())) - KeyframeRectangleDimension / 2;
-			if (Keyframes.get(i).isHightlighted()) {
+		// Keyframe dots
+		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel); i++) {
+			int X = (int) (margin + (this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()) - KeyframeRectangleDimension / 2);
+			int Y = (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY())) - KeyframeRectangleDimension / 2;
+			if (this.GetKeyframe(this.ActiveChannel, i).isHightlighted()) {
 				g2.setColor(HightlightedKeyframeRectangleColor);
-				g2.drawString(Keyframes.get(i).GetParameter("tilt") + "", X + 3, Y - 4);
+				g2.drawString(this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) + "", X + 3, Y - 4);
 			} else {
 				g2.setColor(KeyframeRectangleColor);
 			}
 			g2.fillRect(X, Y, KeyframeRectangleDimension, KeyframeRectangleDimension);
-		} // GOTO Indicators
+		} 
+		/*
+		// GOTO Indicators
 		g2.setColor(GOTOIndicatorColor);
 		for (int i = 0; i < 20; i++) {
 			int X = (int) (margin + (i * this.getTimelapseShutterPeriod() * ScaleX) - GOTOIndicatorDimension / 2);
@@ -528,6 +594,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			int Y = (int) (MarginTop + 5);
 			g2.fillOval(X, Y, ShutterCircleDimension, ShutterCircleDimension);
 		}
+*/
 		// Current Time Indicator
 		g2.setColor(CurrentTimeIndicatorColor);
 		g2.setStroke(new BasicStroke(1.0f));
@@ -573,11 +640,20 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		this.PostShootDelay = PostShootDelay;
 	}
 
+	/*
+	 * The evaluate time is when you click into the timeline to move the current
+	 * time slider to a custom position When the timeline is executed the time
+	 * starts running from zero though
+	 */
 	public float getEvaluateTime() {
 		return EvaluateTime;
 	}
 
 	public void setEvaluateTime(float EvaluateTime) {
 		this.EvaluateTime = EvaluateTime;
+	}
+
+	public void SetEvaluateTime(long EvalTime) {
+		this.setEvaluateTime(EvalTime);
 	}
 }

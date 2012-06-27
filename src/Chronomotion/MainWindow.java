@@ -36,6 +36,9 @@ import javax.swing.JLabel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.JButton;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -507,12 +510,27 @@ public class MainWindow implements Runnable {
 		AnimationPanel.add(scrollPane, "cell 0 2 2 1,alignx left,growy");
 
 		ChannelSelector = new JTree();
-		javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("Remotehead");
-		javax.swing.tree.DefaultMutableTreeNode treeNode2 = new javax.swing.tree.DefaultMutableTreeNode("Pitch");
-		treeNode1.add(treeNode2);
-		treeNode2 = new javax.swing.tree.DefaultMutableTreeNode("Yaw");
-		treeNode1.add(treeNode2);
-		ChannelSelector.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+		DefaultMutableTreeNode HeadNode = new DefaultMutableTreeNode("Remotehead");
+		DefaultMutableTreeNode treeNode1 = new DefaultMutableTreeNode("pan");
+		DefaultMutableTreeNode treeNode2 = new DefaultMutableTreeNode("tilt");
+		HeadNode.add(treeNode1);
+		HeadNode.add(treeNode2);
+		ChannelSelector.addTreeSelectionListener(new TreeSelectionListener() {
+			public void valueChanged(TreeSelectionEvent e) {
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) ChannelSelector.getLastSelectedPathComponent();
+
+				/* if nothing is selected */
+				if (node == null)
+					return;
+
+				/* retrieve the node that was selected */
+				Object nodeInfo = node.getUserObject();
+				if (nodeInfo.toString() != "Remotehead") {
+					timeline1.SetActiveChannel(nodeInfo.toString());
+				}
+			}
+		});
+		ChannelSelector.setModel(new javax.swing.tree.DefaultTreeModel(HeadNode));
 		ChannelSelector.setCellRenderer(null);
 		ChannelSelector.setName("jTree1"); // NOI18N
 		scrollPane.setRowHeaderView(ChannelSelector);
@@ -658,7 +676,7 @@ public class MainWindow implements Runnable {
 		_last_time_stamp = now;
 		if (Parent.GetMerlinController() != null) {
 			if (Parent.GetMerlinController().IsConnected()) {
-				
+
 				Parent.GetMerlinController().ReadAxisPosition(AXIS.PAN);
 				Parent.GetMerlinController().ReadAxisPosition(AXIS.TILT);
 
@@ -711,10 +729,10 @@ public class MainWindow implements Runnable {
 		}
 		return ratio;
 	}
-	
+
 	public void SetPhaseState(String text) {
-        TimelineState.setText(text);
-    }
+		TimelineState.setText(text);
+	}
 
 	private void RIGHTMousePressed(java.awt.event.MouseEvent evt) {
 		Parent.GetMerlinController().RotateAxis(AXIS.PAN, 128, GetQuickControlSpeed(), DIRECTION.CW);

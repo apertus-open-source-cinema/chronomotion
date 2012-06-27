@@ -30,6 +30,12 @@ import java.util.Comparator;
 
 public class KeyFrameTimeComparator implements Comparator<Keyframe> {
 
+	/*
+	 * (non-Javadoc)
+	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+	 * 
+	 * This class is used to sort keyframes by their time.
+	 */
     public int compare(Keyframe a, Keyframe b) {
         if (a.GetTime() < b.GetTime()) {
             return -1;
