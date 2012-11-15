@@ -78,8 +78,9 @@ public class Keyframe {
 	public float GetParameter(String key) {
 		if (Parameters.containsKey(key)) {
 			return Parameters.get(key);
-		} else
+		} else {
 			return 0.0f;
+		}
 	}
 
 	/*

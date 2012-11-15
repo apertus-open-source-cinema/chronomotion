@@ -523,7 +523,10 @@ public class MainWindow implements Runnable {
 				if (node == null)
 					return;
 
-				/* retrieve the node that was selected, ignore the root node which just acts as a label currently */
+				/*
+				 * retrieve the node that was selected, ignore the root node
+				 * which just acts as a label currently
+				 */
 				if (!node.isRoot()) {
 					Object nodeInfo = node.getUserObject();
 					timeline1.SetActiveChannel(nodeInfo.toString());
@@ -855,15 +858,16 @@ public class MainWindow implements Runnable {
 
 	private void TimelineNextKeyframePressed(java.awt.event.MouseEvent evt) {
 		highlightindex++;
+
 		if (highlightindex < 0) {
 			highlightindex = 0;
 		}
-		if (highlightindex > timeline1.GetNumberOfKeyframes() - 1) {
-			highlightindex = timeline1.GetNumberOfKeyframes() - 1;
+		if (highlightindex > timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1) {
+			highlightindex = timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1;
 		}
-		timeline1.SetKeyframeHighlight(highlightindex);
+		timeline1.SetKeyframeHighlight(timeline1.GetActiveChannel(), highlightindex);
 
-		TimelineEditValue.setText(timeline1.GetParameter(highlightindex, "tilt") + "");
+		TimelineEditValue.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter(timeline1.GetActiveChannel()) + "");
 		TimelineEditTime.setText(timeline1.GetTime(highlightindex) + "");
 	}
 
@@ -872,18 +876,18 @@ public class MainWindow implements Runnable {
 		if (highlightindex < 0) {
 			highlightindex = 0;
 		}
-		if (highlightindex > timeline1.GetNumberOfKeyframes() - 1) {
-			highlightindex = timeline1.GetNumberOfKeyframes() - 1;
+		if (highlightindex > timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1) {
+			highlightindex = timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1;
 		}
-		timeline1.SetKeyframeHighlight(highlightindex);
+		timeline1.SetKeyframeHighlight(timeline1.GetActiveChannel(), highlightindex);
 
-		TimelineEditValue.setText(timeline1.GetParameter(highlightindex, "tilt") + "");
+		TimelineEditValue.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter(timeline1.GetActiveChannel()) + "");
 		TimelineEditTime.setText(timeline1.GetTime(highlightindex) + "");
 	}
 
 	private void TimelineEditPressed(java.awt.event.MouseEvent evt) {
-		timeline1.SetParameter(highlightindex, "tilt", Float.parseFloat(TimelineEditValue.getText()));
-		timeline1.SetTime(highlightindex, Float.parseFloat(TimelineEditTime.getText()));
+		timeline1.SetParameter(timeline1.GetActiveChannel(), highlightindex, timeline1.GetActiveChannel(), Float.parseFloat(TimelineEditValue.getText()));
+		timeline1.SetTime(timeline1.GetActiveChannel(), highlightindex, Float.parseFloat(TimelineEditTime.getText()));
 		timeline1.Redraw();
 	}
 
