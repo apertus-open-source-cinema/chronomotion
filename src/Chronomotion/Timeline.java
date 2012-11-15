@@ -54,7 +54,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 	private Timeline me;
 	private float CurrentTime = 0;
-	private float StartTime = 0;
+	private long StartTime = 0;
 	private float PauseTime = 0;
 	private float EvaluateTime = 0;
 	private STATE CurrentState;
@@ -99,6 +99,8 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		Keyframe FramePan03 = new Keyframe(50);
 		FramePan03.SetParameter("pan", 40.0f);
 		Keyframes.add(FramePan03);
+		
+		this.OrderKeyframes();
 
 		addMouseListener(new java.awt.event.MouseAdapter() {
 
@@ -146,8 +148,8 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 	/*
 	 * Get Keyframes in the correct order again, sort by time. This should be
-	 * called every time a new keyframe is added or an existing keyframes is
-	 * moved in the timeaxis
+	 * called every time a new keyframe is added or an existing keyframe is
+	 * moved on the time axis
 	 */
 	public void OrderKeyframes() {
 		Comparator<Keyframe> comparator = new KeyFrameTimeComparator();
@@ -162,23 +164,26 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	public void UpdateTargetValue() {
 		if (CurrentState == STATE.RUNNING) {
 			if (StartTime != 0) {
-				float PreviousKeyframeTime = GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime()), this.ActiveChannel);
-				float NextKeyframeTime = GetTime(GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime()), this.ActiveChannel);
-				float delta_time = NextKeyframeTime - PreviousKeyframeTime;
-				float time_factor_current_segment = (GetCurrentTime() - GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime()), this.ActiveChannel)) / delta_time;
-				float d = GetKeyframe(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel);
-				float k = (GetKeyframe(this.ActiveChannel, GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel)
-						- GetKeyframe(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel)) / delta_time;
-				TargetValue = k * time_factor_current_segment * delta_time + d;
-				// System.out.println("PreviousKeyframeTime = " +
-				// PreviousKeyframeTime);
-				// System.out.println("NextKeyframeTime = " + NextKeyframeTime);
-				// System.out.println("time_factor_current_segment = " +
-				// time_factor_current_segment);
-				// System.out.println("k = " + k);
-				// System.out.println("TargetPitch = " + TargetPitch);
-				// System.out.println("time_factor_current_segment = " +
-				// time_factor_current_segment);
+				if (GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime()) > 0) {
+					float PreviousKeyframeTime = GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime()), this.ActiveChannel);
+					float NextKeyframeTime = GetTime(GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime()), this.ActiveChannel);
+					float delta_time = NextKeyframeTime - PreviousKeyframeTime;
+					float time_factor_current_segment = (GetCurrentTime() - GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime()), this.ActiveChannel)) / delta_time;
+					float d = GetKeyframe(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel);
+					
+					float k = (GetKeyframe(this.ActiveChannel, GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel)
+							- GetKeyframe(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel)) / delta_time;
+					TargetValue = k * time_factor_current_segment * delta_time + d;
+					// System.out.println("PreviousKeyframeTime = " +
+					// PreviousKeyframeTime);
+					// System.out.println("NextKeyframeTime = " + NextKeyframeTime);
+					// System.out.println("time_factor_current_segment = " +
+					// time_factor_current_segment);
+					// System.out.println("k = " + k);
+					// System.out.println("TargetPitch = " + TargetPitch);
+					// System.out.println("time_factor_current_segment = " +
+					// time_factor_current_segment);
+				}
 			}
 		}
 	}
@@ -270,7 +275,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	public int GetPreviousKeyframeIndex(String channel, float currenttime) {
 		int tempindex = -1;
 		float tempvalue = 0;
-		// Find all occurances that are before the current time
+		// Find all occurrences that are before the current time
 		for (int i = 0; i < this.GetNumberOfKeyframes(channel); i++) {
 			if (currenttime >= this.GetKeyframe(channel, i).GetTime()) {
 				// store the highest one
@@ -285,12 +290,16 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 	/*
 	 * Delete one keyframe providing its index
+	 * TODO: select channel
 	 */
 	public void RemoveKeyframe(int index) {
 		Keyframes.remove(index);
 		Redraw();
 	}
 
+	/*
+	 * When starting to run an animation the threads need to be started
+	 */
 	public void UpdaterStart() {
 		if (!Updater.isAlive()) {
 			Updater.start();
@@ -485,10 +494,6 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	}
 
 	public Keyframe GetKeyframe(String channel, int index) {
-		// Make sure keyframes are ordered by the time otherwise we will run
-		// into problems
-		this.OrderKeyframes();
-
 		int count = 0;
 
 		// iterate through all keyframes that have a value in the specified
@@ -542,6 +547,9 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 	public void SetTime(String channel, int index, float newtime) {
 		GetKeyframe(channel, index).SetTime(newtime);
+		
+		// Since the order can change due to the changed time reorder all keyframes
+		this.OrderKeyframes();
 	}
 
 	private int margin = 5;

@@ -431,7 +431,7 @@ public class MainWindow implements Runnable {
 		lblNewLabel_4 = new JLabel("Time:");
 		AnimationPanel.add(lblNewLabel_4, "cell 0 0");
 
-		TimelineTime = new JLabel("...");
+		TimelineTime = new JLabel(".");
 		AnimationPanel.add(TimelineTime, "cell 1 0,aligny center");
 
 		lblState = new JLabel("State:");
@@ -449,7 +449,7 @@ public class MainWindow implements Runnable {
 		lblTaget = new JLabel("Taget:");
 		AnimationPanel.add(lblTaget, "cell 0 1");
 
-		TimelineTarget = new JLabel("...");
+		TimelineTarget = new JLabel(".");
 		AnimationPanel.add(TimelineTarget, "cell 1 1,aligny baseline");
 
 		TimelineStart = new JButton("start");
@@ -678,6 +678,10 @@ public class MainWindow implements Runnable {
 		long delta_time = now - _last_time_stamp;
 		_last_time_stamp = now;
 		if (Parent.GetMerlinController() != null) {
+			if (timeline1 != null) {
+				TimelineTime.setText(Math.round(timeline1.GetCurrentTime()*100)/100.0f + "");
+				TimelineTarget.setText(Math.round(timeline1.GetCurrentTargetValue()*100)/100.0f + "");
+			}
 			if (Parent.GetMerlinController().IsConnected()) {
 
 				Parent.GetMerlinController().ReadAxisPosition(AXIS.PAN);
@@ -714,10 +718,6 @@ public class MainWindow implements Runnable {
 				// tilt_sidereal.setText(MerlinController.GetSiderealRate(AXIS.TILT)
 				// +
 				// "");
-				if (timeline1 != null) {
-					TimelineTime.setText(timeline1.GetCurrentTime() + "");
-					TimelineTarget.setText(timeline1.GetCurrentTargetValue() + "");
-				}
 			}
 		}
 	}
