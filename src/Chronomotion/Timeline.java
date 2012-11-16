@@ -169,15 +169,15 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 					float k = (GetKeyframe(this.ActiveChannel, GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel) - GetKeyframe(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel)) / delta_time;
 					TargetValue = k * time_factor_current_segment * delta_time + d;
 
-					// System.out.println("PreviousKeyframeTime = " +
+					// Parent.WriteLogtoConsole("PreviousKeyframeTime = " +
 					// PreviousKeyframeTime);
-					// System.out.println("NextKeyframeTime = " +
+					// Parent.WriteLogtoConsole("NextKeyframeTime = " +
 					// NextKeyframeTime);
-					// System.out.println("time_factor_current_segment = " +
+					// Parent.WriteLogtoConsole("time_factor_current_segment = " +
 					// time_factor_current_segment);
-					// System.out.println("k = " + k);
-					// System.out.println("TargetPitch = " + TargetPitch);
-					// System.out.println("time_factor_current_segment = " +
+					// Parent.WriteLogtoConsole("k = " + k);
+					// Parent.WriteLogtoConsole("TargetPitch = " + TargetPitch);
+					// Parent.WriteLogtoConsole("time_factor_current_segment = " +
 					// time_factor_current_segment);
 				}
 			}
@@ -447,14 +447,14 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			
 			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(GetCurrentTime());
 			
-			System.out.println("Next Frame at " + NextTargetShutterReleaseTime + " seconds");
-			System.out.println("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "tilt"));
-			System.out.println("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "pan"));
+			Parent.WriteLogtoConsole("Next Frame at " + NextTargetShutterReleaseTime + " seconds");
+			Parent.WriteLogtoConsole("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "tilt"));
+			Parent.WriteLogtoConsole("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "pan"));
 			
 			//float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()), this.ActiveChannel);
 			//Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
 			
-			System.out.println("Changing State to: " + newstate);
+			Parent.WriteLogtoConsole("Changing State to: " + newstate);
 			PhaseStateLabel.setText("Moving");
 			CurrentPhase = HEADPHASE.MOVING;
 			
@@ -464,9 +464,9 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(GetCurrentTime());
 			
-			System.out.println("Next Frame at " + NextTargetShutterReleaseTime + " seconds");
-			System.out.println("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "tilt"));
-			System.out.println("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "pan"));
+			Parent.WriteLogtoConsole("Next Frame at " + NextTargetShutterReleaseTime + " seconds");
+			Parent.WriteLogtoConsole("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "tilt"));
+			Parent.WriteLogtoConsole("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "pan"));
 			
 			//float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()), this.ActiveChannel);
 			//Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
@@ -475,14 +475,14 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		} else if (newstate == HEADPHASE.POSTSHOOTDELAY) {
 			PhaseStateLabel.setText("Post Shoot Delay");
 			CurrentPhase = HEADPHASE.POSTSHOOTDELAY;
-			System.out.println("Changing State to: " + newstate);	
+			Parent.WriteLogtoConsole("Changing State to: " + newstate);
 			
 			
 		} else if (newstate == HEADPHASE.RELEASINGSHUTTER) {
 			CurrentPhase = HEADPHASE.RELEASINGSHUTTER;
-			System.out.println("Changing State to: " + newstate);
+			Parent.WriteLogtoConsole("Changing State to: " + newstate);
 			PhaseStateLabel.setText("Triggering Shutter");
-			System.out.println("snap!");
+			Parent.WriteLogtoConsole("snap!");
 			
 			// TODO: twice --- why does it only work this way?
 			Parent.GetMerlinController().TriggerShutter();
@@ -492,12 +492,12 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		} else if (newstate == HEADPHASE.WAITING) {
 			PhaseStateLabel.setText("Waiting");
 			CurrentPhase = HEADPHASE.WAITING;
-			System.out.println("Changing State to: " + newstate);
+			Parent.WriteLogtoConsole("Changing State to: " + newstate);
 			
 			
 		} else if ((this.GetCurrentHeadPhase().equals(HEADPHASE.MOVING)) && (newstate == HEADPHASE.STOPPED)) {
 			PhaseStateLabel.setText("Idle");
-			System.out.println("Changing State to: " + newstate);
+			Parent.WriteLogtoConsole("Changing State to: " + newstate);
 			// TODO
 		}
 	}
