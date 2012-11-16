@@ -570,6 +570,7 @@ public class MainWindow implements Runnable {
 		scrollPane_1.setViewportView(timeline1);
 
 		SliderScaleY = new JSlider();
+		SliderScaleY.setValue(3);
 		SliderScaleY.setPaintTicks(true);
 		SliderScaleY.setOrientation(SwingConstants.VERTICAL);
 		AnimationPanel.add(SliderScaleY, "cell 11 2");
@@ -590,6 +591,7 @@ public class MainWindow implements Runnable {
 		});
 
 		SliderScaleX = new JSlider();
+		SliderScaleX.setValue(5);
 		SliderScaleX.setPaintTicks(true);
 		AnimationPanel.add(SliderScaleX, "cell 2 3 9 1,growx");
 		SliderScaleX.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -680,7 +682,7 @@ public class MainWindow implements Runnable {
 		if (Parent.GetMerlinController() != null) {
 			if (timeline1 != null) {
 				TimelineTime.setText(Math.round(timeline1.GetCurrentTime()*100)/100.0f + "");
-				TimelineTarget.setText(Math.round(timeline1.GetCurrentTargetValue()*100)/100.0f + "");
+				TimelineTarget.setText(Math.round(timeline1.GetCurrentTargetValue("tilt")*100)/100.0f + "");
 			}
 			if (Parent.GetMerlinController().IsConnected()) {
 

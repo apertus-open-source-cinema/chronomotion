@@ -80,26 +80,14 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		ActiveChannel = "tilt";
 
 		// For Testing
-		Keyframe Frame1 = new Keyframe(0);
-		Frame1.SetParameter("tilt", 0.0f);
-		Keyframes.add(Frame1);
-		Keyframe Frame2 = new Keyframe(30);
-		Frame2.SetParameter("tilt", 50.0f);
-		Keyframes.add(Frame2);
-		Keyframe Frame3 = new Keyframe(50);
-		Frame3.SetParameter("tilt", 30.0f);
-		Keyframes.add(Frame3);
+		AddKeyFrame(0, "tilt", 0.0f);
+		AddKeyFrame(30, "tilt", 50.0f);
+		AddKeyFrame(50, "tilt", 30.0f);
 
-		Keyframe FramePan01 = new Keyframe(0);
-		FramePan01.SetParameter("pan", 0.0f);
-		Keyframes.add(FramePan01);
-		Keyframe FramePan02 = new Keyframe(10);
-		FramePan02.SetParameter("pan", 10.0f);
-		Keyframes.add(FramePan02);
-		Keyframe FramePan03 = new Keyframe(50);
-		FramePan03.SetParameter("pan", 40.0f);
-		Keyframes.add(FramePan03);
-		
+		AddKeyFrame(0, "pan", 0.0f);
+		AddKeyFrame(10, "pan", 30.0f);
+		AddKeyFrame(50, "pan", 50.0f);
+
 		this.OrderKeyframes();
 
 		addMouseListener(new java.awt.event.MouseAdapter() {
@@ -110,7 +98,10 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 				int y = evt.getY();
 				float value = ((float) (x - margin) / me.getScaleX());
 				me.setEvaluateTime(value);
+
+				// Debug
 				// Parent.GetParent().WriteLogtoConsole("mouse: " + value);
+
 				me.Redraw();
 			}
 		});
@@ -124,9 +115,12 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		this.Parent = parent;
 	}
 
-	public void AddKeyFrame(String Channel, float Time, float value) {
+	/*
+	 * Add one keyframe with one key(string)/value(float) pair
+	 */
+	public void AddKeyFrame(float Time, String key, float value) {
 		Keyframe Frame = new Keyframe(Time);
-		Frame.SetParameter(Channel, value);
+		Frame.SetParameter(key, value);
 		Keyframes.add(Frame);
 
 		OrderKeyframes();
@@ -140,6 +134,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 	public void SetActiveChannel(String newchannel) {
 		this.ActiveChannel = newchannel;
+		Redraw();
 	}
 
 	public String GetActiveChannel() {
@@ -170,13 +165,14 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 					float delta_time = NextKeyframeTime - PreviousKeyframeTime;
 					float time_factor_current_segment = (GetCurrentTime() - GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime()), this.ActiveChannel)) / delta_time;
 					float d = GetKeyframe(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel);
-					
-					float k = (GetKeyframe(this.ActiveChannel, GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel)
-							- GetKeyframe(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel)) / delta_time;
+
+					float k = (GetKeyframe(this.ActiveChannel, GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel) - GetKeyframe(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel)) / delta_time;
 					TargetValue = k * time_factor_current_segment * delta_time + d;
+
 					// System.out.println("PreviousKeyframeTime = " +
 					// PreviousKeyframeTime);
-					// System.out.println("NextKeyframeTime = " + NextKeyframeTime);
+					// System.out.println("NextKeyframeTime = " +
+					// NextKeyframeTime);
 					// System.out.println("time_factor_current_segment = " +
 					// time_factor_current_segment);
 					// System.out.println("k = " + k);
@@ -187,15 +183,20 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			}
 		}
 	}
-	
-	public float GetCurrentTargetValue() {
-		return TargetValue;
+
+	/*
+	 * Return the value of the channel at the current time
+	 */
+	public float GetCurrentTargetValue(String channel) {
+		// TODO
+		return 0.0f;
 	}
 
 	/*
 	 * Calculate the value of the graph of one channel at any given time. These
-	 * are the values used to send to the connected pan/tilt head. 
-	 * Only linear interpolation is supported at this time. Bezier interpolation will follow in the future.
+	 * are the values used to send to the connected pan/tilt head. Only linear
+	 * interpolation is supported at this time. Bezier interpolation will follow
+	 * in the future.
 	 */
 	public float GetTargetValue(float time, String channel) {
 		float PreviousKeyframeTime = GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, time), channel);
@@ -204,8 +205,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 		float time_factor_current_segment = (time - GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, time), channel)) / delta_time;
 		float d = GetKeyframe(channel, GetPreviousKeyframeIndex(this.ActiveChannel, time)).GetParameter(channel);
-		float k = (GetKeyframe(channel, GetNextKeyframeIndex(this.ActiveChannel, time)).GetParameter(channel)
-				- GetKeyframe(channel, GetPreviousKeyframeIndex(this.ActiveChannel, time)).GetParameter(channel)) / delta_time;
+		float k = (GetKeyframe(channel, GetNextKeyframeIndex(this.ActiveChannel, time)).GetParameter(channel) - GetKeyframe(channel, GetPreviousKeyframeIndex(this.ActiveChannel, time)).GetParameter(channel)) / delta_time;
 		float ret = (k * time_factor_current_segment * delta_time + d);
 		return ret;
 	}
@@ -249,13 +249,14 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	}
 
 	/*
-	 * Find the index of the next keyframe in the current active channel
-	 * after the supplied time
+	 * Find the index of the next keyframe in the current active channel after
+	 * the supplied time
 	 */
 	public int GetNextKeyframeIndex(String channel, float currenttime) {
 		int tempindex = -1;
 		float tempvalue = 0;
-		// Find all occurances that are after the current time in the selected channel
+		// Find all occurances that are after the current time in the selected
+		// channel
 		for (int i = 0; i < this.GetNumberOfKeyframes(channel); i++) {
 			if (currenttime < this.GetKeyframe(channel, i).GetTime()) {
 				// store the lowest one
@@ -269,8 +270,8 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	}
 
 	/*
-	 * Find the index of the previous keyframe in the selected Channel
-	 * before the supplied time
+	 * Find the index of the previous keyframe in the selected Channel before
+	 * the supplied time
 	 */
 	public int GetPreviousKeyframeIndex(String channel, float currenttime) {
 		int tempindex = -1;
@@ -289,8 +290,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	}
 
 	/*
-	 * Delete one keyframe providing its index
-	 * TODO: select channel
+	 * Delete one keyframe providing its index TODO: select channel
 	 */
 	public void RemoveKeyframe(int index) {
 		Keyframes.remove(index);
@@ -310,14 +310,23 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		UpdaterRunning = true;
 	}
 
+	/*
+	 * Stop the Thread
+	 */
 	public void UpdaterStop() {
 		UpdaterRunning = false;
 	}
 
+	/*
+	 * Return state the remote head is currently in
+	 */
 	public HEADPHASE GetCurrentHeadPhase() {
 		return this.CurrentPhase;
 	}
 
+	/*
+	 * Change the state the remote head should currently be in
+	 */
 	public void ChangeState(STATE newstate) {
 		if ((CurrentState == STATE.STOPPED) && (newstate == STATE.RUNNING)) {
 			// START FROM BEGINNING
@@ -334,6 +343,14 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			this.UpdaterStop();
 			this.Update();
 			this.repaint();
+		} else if ((CurrentState == STATE.RUNNING) && (newstate == STATE.RUNNING)) {
+			// We missed a target - moving on
+			CurrentState = newstate;
+			StartTime = 0;
+			PauseTime = 0;
+			this.UpdaterStop();
+			this.Update();
+			this.repaint();
 		} else {
 			CurrentState = newstate;
 		}
@@ -344,6 +361,9 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	private int ShutterReleaseUpdateFrequency = 100;
 	private float NextTargetShutterReleaseTime = 0.0f;
 
+	/*
+	 * While animation is running update the state constantly
+	 */
 	public void run() {
 		while (Thread.currentThread() == Updater) {
 			if (UpdaterRunning) {
@@ -379,6 +399,13 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 					// target reached
 					// this.ChangeHeadState(HEADPHASE.WAITING);
 					// }
+					
+					// we reached the keyframe time, likely the head was not
+					// able to reach the position in time -> bad
+
+					if (this.GetCurrentTime() > this.NextTargetShutterReleaseTime)
+						this.ChangeHeadState(HEADPHASE.WAITING);
+					
 					try {
 						Thread.sleep((int) (1.0f / MovingUpdateFrequency * 1000));
 					} catch (InterruptedException ex) {
@@ -415,43 +442,62 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	}
 
 	public void ChangeHeadState(HEADPHASE newstate) {
-		if ((this.GetCurrentHeadPhase().equals(HEADPHASE.POSTSHOOTDELAY)) && (newstate == HEADPHASE.MOVING)) {
-			// Looped start
-			// float NextKeyframeParameter =
-			// GetParameter(GetNextKeyframeIndex(GetCurrentTime()), "tilt");
-			float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()), this.ActiveChannel);
-			Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
-			CurrentPhase = HEADPHASE.MOVING;
+		if ((this.GetCurrentHeadPhase().equals(HEADPHASE.STOPPED)) && (newstate == HEADPHASE.MOVING)) {
+			// Animation Initial Start
+			
+			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(GetCurrentTime());
+			
+			System.out.println("Next Frame at " + NextTargetShutterReleaseTime + " seconds");
+			System.out.println("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "tilt"));
+			System.out.println("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "pan"));
+			
+			//float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()), this.ActiveChannel);
+			//Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
+			
+			System.out.println("Changing State to: " + newstate);
 			PhaseStateLabel.setText("Moving");
-			System.out.println("NextShootParameter = " + NextShootParameter);
+			CurrentPhase = HEADPHASE.MOVING;
+			
+			
+		} else if ((this.GetCurrentHeadPhase().equals(HEADPHASE.POSTSHOOTDELAY)) && (newstate == HEADPHASE.MOVING)) {
+			// loop continues
+
+			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(GetCurrentTime());
+			
+			System.out.println("Next Frame at " + NextTargetShutterReleaseTime + " seconds");
+			System.out.println("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "tilt"));
+			System.out.println("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "pan"));
+			
+			//float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()), this.ActiveChannel);
+			//Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
+			
+			
 		} else if (newstate == HEADPHASE.POSTSHOOTDELAY) {
-			// Calculate when to trigger the shutter release next
-			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(this.GetCurrentTime());
 			PhaseStateLabel.setText("Post Shoot Delay");
 			CurrentPhase = HEADPHASE.POSTSHOOTDELAY;
-			System.out.println("NextTargetShutterReleaseTime = " + NextTargetShutterReleaseTime);
+			System.out.println("Changing State to: " + newstate);	
+			
+			
 		} else if (newstate == HEADPHASE.RELEASINGSHUTTER) {
-			// twice --- why does it only work this way?
-			Parent.GetMerlinController().TriggerShutter();
-			Parent.GetMerlinController().TriggerShutter();
-
+			CurrentPhase = HEADPHASE.RELEASINGSHUTTER;
+			System.out.println("Changing State to: " + newstate);
 			PhaseStateLabel.setText("Triggering Shutter");
 			System.out.println("snap!");
-			CurrentPhase = HEADPHASE.RELEASINGSHUTTER;
+			
+			// TODO: twice --- why does it only work this way?
+			Parent.GetMerlinController().TriggerShutter();
+			Parent.GetMerlinController().TriggerShutter();
+		
+			
 		} else if (newstate == HEADPHASE.WAITING) {
 			PhaseStateLabel.setText("Waiting");
 			CurrentPhase = HEADPHASE.WAITING;
-		} else if ((this.GetCurrentHeadPhase().equals(HEADPHASE.STOPPED)) && (newstate == HEADPHASE.MOVING)) {
-			// Initial start
-			float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()), this.ActiveChannel);
-			Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
-			CurrentPhase = HEADPHASE.MOVING;
-			PhaseStateLabel.setText("Moving");
-			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(this.GetCurrentTime());
-			System.out.println("NextTargetShutterReleaseTime = " + NextTargetShutterReleaseTime);
-			System.out.println("NextShootParameter = " + NextShootParameter);
+			System.out.println("Changing State to: " + newstate);
+			
+			
 		} else if ((this.GetCurrentHeadPhase().equals(HEADPHASE.MOVING)) && (newstate == HEADPHASE.STOPPED)) {
 			PhaseStateLabel.setText("Idle");
+			System.out.println("Changing State to: " + newstate);
 			// TODO
 		}
 	}
@@ -462,14 +508,15 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	}
 
 	public void SetKeyframeHighlight(String channel, int selectedindex) {
-		//Clear highlighted state for all keyframes to guarantee only a single keyframe will be highlighted at a time.
+		// Clear highlighted state for all keyframes to guarantee only a single
+		// keyframe will be highlighted at a time.
 		for (int i = 0; i < Keyframes.size(); i++) {
 			Keyframes.get(i).setHightlighted(false);
 		}
 		// Set Highlighted
 		GetKeyframe(channel, selectedindex).setHightlighted(true);
-		
-		//Make sure we actually see the newly highlighted keyframe
+
+		// Make sure we actually see the newly highlighted keyframe
 		Redraw();
 	}
 
@@ -493,6 +540,9 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		return count;
 	}
 
+	/*
+	 * Return a specific keyframe from a particular channel with index
+	 */
 	public Keyframe GetKeyframe(String channel, int index) {
 		int count = 0;
 
@@ -511,18 +561,20 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		return null;
 	}
 
-	
-	// TODO: deprecate this function better to use GetKeyframe(channel, index).GetParameter(key)
-	/*public float GetParameter(int index, String key) {
-		if (index > Keyframes.size() - 1) {
-			return -1;
-		} else if (index < 0) {
-			return -1;
-		} else {
-			return Keyframes.get(index).GetParameter(key);
-		}
-	}*/
+	/*
+	 * Set time of a keyframe
+	 */
+	public void SetTime(String channel, int index, float newtime) {
+		GetKeyframe(channel, index).SetTime(newtime);
 
+		// Since the order can change due to the changed time reorder all
+		// keyframes
+		this.OrderKeyframes();
+	}
+
+	/*
+	 * Get the time of a keyframe with index from the selected channel
+	 */
 	public float GetTime(int index, String channel) {
 		if (index > this.GetNumberOfKeyframes(channel) - 1) {
 			return -1.0f;
@@ -532,24 +584,26 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			return this.GetKeyframe(channel, index).GetTime();
 		}
 	}
-	
+
+	/*
+	 * Get the time of a keyframe with index from the current active channel
+	 */
 	public float GetTime(int index) {
 		return GetTime(index, this.ActiveChannel);
 	}
 
+	/*
+	 * Set Parameter (key/value pair) of a keyframe
+	 */
 	public void SetParameter(String channel, int index, String key, float value) {
 		GetKeyframe(channel, index).SetParameter(key, value);
 	}
 
+	/*
+	 * Set Parameter (key/value pair) of a keyframe
+	 */
 	public void SetParameter(String channel, int index, String key, int value) {
 		GetKeyframe(channel, index).SetParameter(key, value);
-	}
-
-	public void SetTime(String channel, int index, float newtime) {
-		GetKeyframe(channel, index).SetTime(newtime);
-		
-		// Since the order can change due to the changed time reorder all keyframes
-		this.OrderKeyframes();
 	}
 
 	private int margin = 5;
@@ -623,16 +677,21 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			g2.fillRect(X, Y, KeyframeRectangleDimension, KeyframeRectangleDimension);
 		}
 
-		// GOTO Indicators
+		// Frame GOTO Indicators
 		g2.setColor(GOTOIndicatorColor);
 		for (int i = 0; i < 20; i++) {
 			int X = (int) (margin + (i * this.getTimelapseShutterPeriod() * ScaleX) - GOTOIndicatorDimension / 2);
-			//int Y = (int) ((this.getHeight() - margin - (this.GetTargetValue(i * this.getTimelapseShutterPeriod(), this.ActiveChannel) * getScaleY())) - GOTOIndicatorDimension / 2);
-			//g2.fillOval(X, Y, GOTOIndicatorDimension, GOTOIndicatorDimension);
+			// int Y = (int) ((this.getHeight() - margin -
+			// (this.GetTargetValue(i * this.getTimelapseShutterPeriod(),
+			// this.ActiveChannel) * getScaleY())) - GOTOIndicatorDimension /
+			// 2);
+			// g2.fillOval(X, Y, GOTOIndicatorDimension,
+			// GOTOIndicatorDimension);
 		}
+
 		// Shutter Release Circles
 		g2.setColor(ShutterReleaseCircleColor);
-		for (int i = 0; i < 20; i++) { // TODO 20 is just a placeholder for now
+		for (int i = 1; i < 20; i++) { // TODO 20 is just a placeholder for now
 			int X = (int) (margin + (i * this.getTimelapseShutterPeriod() * ScaleX) - ShutterCircleDimension / 2);
 			int Y = (int) (MarginTop + 5);
 			g2.fillOval(X, Y, ShutterCircleDimension, ShutterCircleDimension);
