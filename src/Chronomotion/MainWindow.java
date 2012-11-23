@@ -452,7 +452,7 @@ public class MainWindow implements Runnable {
 		TimelineTarget = new JLabel(".");
 		AnimationPanel.add(TimelineTarget, "cell 1 1,aligny baseline");
 
-		TimelineStart = new JButton("start");
+		TimelineStart = new JButton("Start");
 		TimelineStart.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -461,7 +461,7 @@ public class MainWindow implements Runnable {
 		});
 		AnimationPanel.add(TimelineStart, "cell 2 1");
 
-		TimelineReset = new JButton("reset");
+		TimelineReset = new JButton("Reset");
 		TimelineReset.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -511,8 +511,8 @@ public class MainWindow implements Runnable {
 
 		ChannelSelector = new JTree();
 		DefaultMutableTreeNode HeadNode = new DefaultMutableTreeNode("Remotehead");
-		DefaultMutableTreeNode treeNode1 = new DefaultMutableTreeNode("pan");
-		DefaultMutableTreeNode treeNode2 = new DefaultMutableTreeNode("tilt");
+		DefaultMutableTreeNode treeNode1 = new DefaultMutableTreeNode("Pan");
+		DefaultMutableTreeNode treeNode2 = new DefaultMutableTreeNode("Tilt");
 		HeadNode.add(treeNode1);
 		HeadNode.add(treeNode2);
 		ChannelSelector.addTreeSelectionListener(new TreeSelectionListener() {
@@ -570,7 +570,7 @@ public class MainWindow implements Runnable {
 		scrollPane_1.setViewportView(timeline1);
 
 		SliderScaleY = new JSlider();
-		SliderScaleY.setValue(3);
+		SliderScaleY.setValue(30);
 		SliderScaleY.setPaintTicks(true);
 		SliderScaleY.setOrientation(SwingConstants.VERTICAL);
 		AnimationPanel.add(SliderScaleY, "cell 11 2");
@@ -591,7 +591,6 @@ public class MainWindow implements Runnable {
 		});
 
 		SliderScaleX = new JSlider();
-		SliderScaleX.setValue(5);
 		SliderScaleX.setPaintTicks(true);
 		AnimationPanel.add(SliderScaleX, "cell 2 3 9 1,growx");
 		SliderScaleX.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -894,12 +893,12 @@ public class MainWindow implements Runnable {
 	}
 
 	private void SliderScaleXUpdate() {
-		timeline1.setScaleX(SliderScaleX.getValue());
+		timeline1.setScaleX(SliderScaleX.getValue()/10.0f);
 		timeline1.Redraw();
 	}
 
 	private void SliderScaleYUpdate() {
-		timeline1.setScaleY(SliderScaleY.getValue());
+		timeline1.setScaleY(SliderScaleY.getValue()/10.0f);
 		timeline1.Redraw();
 	}
 

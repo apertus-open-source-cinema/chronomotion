@@ -77,31 +77,41 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		Updater = new Thread(this);
 		Worker = new Thread(this);
 
-		ActiveChannel = "tilt";
+		ActiveChannel = "Tilt";
 
 		// For Testing
-		AddKeyFrame(0, "tilt", 0.0f);
-		AddKeyFrame(30, "tilt", 50.0f);
-		AddKeyFrame(50, "tilt", 30.0f);
+		AddKeyFrame(0, "Tilt", 0.0f);
+		AddKeyFrame(30, "Tilt", 50.0f);
+		AddKeyFrame(50, "Tilt", 30.0f);
 
-		AddKeyFrame(0, "pan", 0.0f);
-		AddKeyFrame(10, "pan", 30.0f);
-		AddKeyFrame(50, "pan", 50.0f);
+		AddKeyFrame(0, "Pan", 0.0f);
+		AddKeyFrame(10, "Pan", 30.0f);
+		AddKeyFrame(50, "Pan", 50.0f);
 
 		this.OrderKeyframes();
 
+		// Show evaluation values when clicking into the timeline
 		addMouseListener(new java.awt.event.MouseAdapter() {
 
 			@Override
-			public void mousePressed(java.awt.event.MouseEvent evt) {
+			public void mouseClicked(java.awt.event.MouseEvent evt) {
+				
+				// Get coordinates
 				int x = evt.getX();
 				int y = evt.getY();
+				
 				float value = ((float) (x - margin) / me.getScaleX());
+				
+				//snapping
+				value = Math.round(value/me.getTimelapseShutterPeriod()) * me.getTimelapseShutterPeriod();
+				
+				// Set the Evaluate Time
 				me.setEvaluateTime(value);
 
 				// Debug
 				// Parent.GetParent().WriteLogtoConsole("mouse: " + value);
 
+				// Update the GUI
 				me.Redraw();
 			}
 		});
@@ -173,11 +183,13 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 					// PreviousKeyframeTime);
 					// Parent.WriteLogtoConsole("NextKeyframeTime = " +
 					// NextKeyframeTime);
-					// Parent.WriteLogtoConsole("time_factor_current_segment = " +
+					// Parent.WriteLogtoConsole("time_factor_current_segment = "
+					// +
 					// time_factor_current_segment);
 					// Parent.WriteLogtoConsole("k = " + k);
 					// Parent.WriteLogtoConsole("TargetPitch = " + TargetPitch);
-					// Parent.WriteLogtoConsole("time_factor_current_segment = " +
+					// Parent.WriteLogtoConsole("time_factor_current_segment = "
+					// +
 					// time_factor_current_segment);
 				}
 			}
@@ -325,7 +337,15 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	}
 
 	/*
-	 * Change the state the remote head should currently be in
+	 * Return state the System is currently in.
+	 */
+	public STATE GetCurrentPhase() {
+		return this.CurrentState;
+	}
+
+	/*
+	 * Change the state of the Animation - this will trigger a whole range of
+	 * things to happen.
 	 */
 	public void ChangeState(STATE newstate) {
 		if ((CurrentState == STATE.STOPPED) && (newstate == STATE.RUNNING)) {
@@ -399,13 +419,13 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 					// target reached
 					// this.ChangeHeadState(HEADPHASE.WAITING);
 					// }
-					
+
 					// we reached the keyframe time, likely the head was not
 					// able to reach the position in time -> bad
 
 					if (this.GetCurrentTime() > this.NextTargetShutterReleaseTime)
 						this.ChangeHeadState(HEADPHASE.WAITING);
-					
+
 					try {
 						Thread.sleep((int) (1.0f / MovingUpdateFrequency * 1000));
 					} catch (InterruptedException ex) {
@@ -441,60 +461,66 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		}
 	}
 
+	/*
+	 * Change the state of the remote head. This is the proper way to stop the
+	 * head operation by setting it to HEADPHASE.STOPPED or to start an
+	 * animation by setting it to HEADPHASE.MOVING
+	 */
 	public void ChangeHeadState(HEADPHASE newstate) {
 		if ((this.GetCurrentHeadPhase().equals(HEADPHASE.STOPPED)) && (newstate == HEADPHASE.MOVING)) {
 			// Animation Initial Start
-			
+
 			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(GetCurrentTime());
-			
+
 			Parent.WriteLogtoConsole("Next Frame at " + NextTargetShutterReleaseTime + " seconds");
 			Parent.WriteLogtoConsole("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "tilt"));
 			Parent.WriteLogtoConsole("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "pan"));
-			
-			//float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()), this.ActiveChannel);
-			//Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
-			
+
+			// float NextShootParameter =
+			// this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()),
+			// this.ActiveChannel);
+			// Parent.GetMerlinController().GotoPosition(AXIS.TILT,
+			// NextShootParameter);
+
 			Parent.WriteLogtoConsole("Changing State to: " + newstate);
 			PhaseStateLabel.setText("Moving");
 			CurrentPhase = HEADPHASE.MOVING;
-			
-			
+
 		} else if ((this.GetCurrentHeadPhase().equals(HEADPHASE.POSTSHOOTDELAY)) && (newstate == HEADPHASE.MOVING)) {
 			// loop continues
 
 			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(GetCurrentTime());
-			
+
 			Parent.WriteLogtoConsole("Next Frame at " + NextTargetShutterReleaseTime + " seconds");
 			Parent.WriteLogtoConsole("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "tilt"));
 			Parent.WriteLogtoConsole("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "pan"));
-			
-			//float NextShootParameter = this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()), this.ActiveChannel);
-			//Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter);
-			
-			
+
+			// float NextShootParameter =
+			// this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()),
+			// this.ActiveChannel);
+			// Parent.GetMerlinController().GotoPosition(AXIS.TILT,
+			// NextShootParameter);
+
 		} else if (newstate == HEADPHASE.POSTSHOOTDELAY) {
 			PhaseStateLabel.setText("Post Shoot Delay");
 			CurrentPhase = HEADPHASE.POSTSHOOTDELAY;
 			Parent.WriteLogtoConsole("Changing State to: " + newstate);
-			
-			
+
 		} else if (newstate == HEADPHASE.RELEASINGSHUTTER) {
 			CurrentPhase = HEADPHASE.RELEASINGSHUTTER;
 			Parent.WriteLogtoConsole("Changing State to: " + newstate);
 			PhaseStateLabel.setText("Triggering Shutter");
 			Parent.WriteLogtoConsole("snap!");
-			
+
 			// TODO: twice --- why does it only work this way?
 			Parent.GetMerlinController().TriggerShutter();
 			Parent.GetMerlinController().TriggerShutter();
-		
-			
+
 		} else if (newstate == HEADPHASE.WAITING) {
 			PhaseStateLabel.setText("Waiting");
 			CurrentPhase = HEADPHASE.WAITING;
 			Parent.WriteLogtoConsole("Changing State to: " + newstate);
-			
-			
+
 		} else if ((this.GetCurrentHeadPhase().equals(HEADPHASE.MOVING)) && (newstate == HEADPHASE.STOPPED)) {
 			PhaseStateLabel.setText("Idle");
 			Parent.WriteLogtoConsole("Changing State to: " + newstate);
@@ -502,11 +528,19 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		}
 	}
 
+	/*
+	 * Redraw the GUI to display updated values
+	 */
 	public void Redraw() {
 		Update();
 		repaint();
 	}
 
+	/*
+	 * In the GUI we can highlight a particular frame and display its
+	 * coordinates. Also when editing a keyframe you will always want to edit
+	 * the one you are currently editing thus the highlighted keyframe
+	 */
 	public void SetKeyframeHighlight(String channel, int selectedindex) {
 		// Clear highlighted state for all keyframes to guarantee only a single
 		// keyframe will be highlighted at a time.
@@ -634,19 +668,31 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		g2.setColor(AxisColor);
 		// Horizontal Line
 		g2.draw(new Line2D.Double(margin, MarginTop, this.getWidth() - margin, MarginTop));
-		g2.drawString("Time [seconds]", margin + 2, 12);
-		// 0 Indicator
-		g2.draw(new Line2D.Double(0 * getScaleX() + margin, MarginTop, 0 * getScaleX() + margin, MarginTop - 3));
-		g2.drawString("0", margin + 2, MarginTop - 1);
-		// 10 Indicator
-		g2.draw(new Line2D.Double(10 * getScaleX() + margin, MarginTop, 10 * getScaleX() + margin, MarginTop - 3));
-		g2.drawString("10", 10 * getScaleX() + margin + 2, MarginTop - 1);
-		// 20 Indicator
-		g2.draw(new Line2D.Double(20 * getScaleX() + margin, MarginTop, 20 * getScaleX() + margin, MarginTop - 3));
-		g2.drawString("20", 20 * getScaleX() + margin + 2, MarginTop - 1);
-		// 30 Indicator
-		g2.draw(new Line2D.Double(30 * getScaleX() + margin, MarginTop, 30 * getScaleX() + margin, MarginTop - 3));
-		g2.drawString("30", 30 * getScaleX() + margin + 2, MarginTop - 1);
+		g2.drawString("Time", margin + 2, 12);
+
+		// X Axis Indicators
+		// Lets define the standard scale 1:1 with 10 seconds = 50 pixels width
+		// 1 second = 5 pixels
+
+		// There should not be more than one indicator each 50 pixels to prevent
+		// making them so dense that you can't read them
+		int number_of_indicators = (int) (this.getWidth() / 10 * getScaleX());
+
+		int indicator = 0;
+		int indicator_x = 0;
+		int scale_decade = 1;
+		if (10/getScaleX() > this.getWidth() / 50) {
+			scale_decade = 10;
+		} 
+		for (int i = 0; i < number_of_indicators; i++) {
+			// Indicator Line
+			g2.draw(new Line2D.Double(indicator_x * getScaleX() + margin, MarginTop, indicator_x * getScaleX() + margin, MarginTop - 3));
+			// Indicator Label
+			g2.drawString(indicator + "s", margin - 5 + (indicator_x * getScaleX()), MarginTop - 5);
+			indicator_x += 10 * scale_decade;
+			indicator += 10 * scale_decade;
+		}
+
 		// Axis
 		g2.setColor(AxisColor);
 		g2.draw(new Line2D.Double(margin, this.getHeight() - margin, this.getWidth(), this.getHeight() - margin));
@@ -664,6 +710,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			int Y2 = (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter(this.ActiveChannel) * getScaleY()));
 			g2.draw(new Line2D.Double(X1, Y1, X2, Y2));
 		}
+
 		// Keyframe dots
 		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel); i++) {
 			int X = (int) (margin + (this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()) - KeyframeRectangleDimension / 2);
@@ -680,7 +727,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		// Frame GOTO Indicators
 		g2.setColor(GOTOIndicatorColor);
 		for (int i = 0; i < 20; i++) {
-			int X = (int) (margin + (i * this.getTimelapseShutterPeriod() * ScaleX) - GOTOIndicatorDimension / 2);
+			int X = (int) (margin + (i * this.getTimelapseShutterPeriod() * getScaleX()) - GOTOIndicatorDimension / 2);
 			// int Y = (int) ((this.getHeight() - margin -
 			// (this.GetTargetValue(i * this.getTimelapseShutterPeriod(),
 			// this.ActiveChannel) * getScaleY())) - GOTOIndicatorDimension /
@@ -692,7 +739,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		// Shutter Release Circles
 		g2.setColor(ShutterReleaseCircleColor);
 		for (int i = 1; i < 20; i++) { // TODO 20 is just a placeholder for now
-			int X = (int) (margin + (i * this.getTimelapseShutterPeriod() * ScaleX) - ShutterCircleDimension / 2);
+			int X = (int) (margin + (i * this.getTimelapseShutterPeriod() * getScaleX()) - ShutterCircleDimension / 2);
 			int Y = (int) (MarginTop + 5);
 			g2.fillOval(X, Y, ShutterCircleDimension, ShutterCircleDimension);
 		}
