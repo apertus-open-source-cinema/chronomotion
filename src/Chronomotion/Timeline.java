@@ -95,16 +95,16 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				
+
 				// Get coordinates
 				int x = evt.getX();
 				int y = evt.getY();
-				
+
 				float value = ((float) (x - margin) / me.getScaleX());
-				
-				//snapping
-				value = Math.round(value/me.getTimelapseShutterPeriod()) * me.getTimelapseShutterPeriod();
-				
+
+				// snapping
+				value = Math.round(value / me.getTimelapseShutterPeriod()) * me.getTimelapseShutterPeriod();
+
 				// Set the Evaluate Time
 				me.setEvaluateTime(value);
 
@@ -681,9 +681,9 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		int indicator = 0;
 		int indicator_x = 0;
 		int scale_decade = 1;
-		if (10/getScaleX() > this.getWidth() / 50) {
+		if (10 / getScaleX() > this.getWidth() / 50) {
 			scale_decade = 10;
-		} 
+		}
 		for (int i = 0; i < number_of_indicators; i++) {
 			// Indicator Line
 			g2.draw(new Line2D.Double(indicator_x * getScaleX() + margin, MarginTop, indicator_x * getScaleX() + margin, MarginTop - 3));
@@ -755,6 +755,13 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		g2.setStroke(new BasicStroke(1.0f));
 		X = (int) (margin + getScaleX() * this.getEvaluateTime());
 		g2.draw(new Line2D.Double(X, margin, X, this.getHeight() - margin));
+
+		// Evaluation Time Value
+		X = (int) (margin + getScaleX() * this.getEvaluateTime());
+		int Y = (int) (this.getHeight() - margin - this.GetTargetValue(this.getEvaluateTime(), this.GetActiveChannel()) * getScaleY());
+		g2.setColor(EvaluationTimeIndicatorColor);
+		g2.drawString(this.GetTargetValue(this.getEvaluateTime(), this.GetActiveChannel()) + "", X + 3, Y - 4);
+		g2.fillRect(X-1, Y, KeyframeRectangleDimension-1, KeyframeRectangleDimension-1);
 	}
 
 	/*
