@@ -654,8 +654,10 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	private int KeyframeRectangleDimension = 4;
 	private int ShutterCircleDimension = 8;
 	private int GOTOIndicatorDimension = 4;
-	private float ScaleX = 10;
-	private float ScaleY = 10;
+	private float ScaleX = 5;
+	private float ScaleY = 5;
+	private float OffsetX = 0;
+	private float OffsetY = 0;
 
 	@Override
 	public void paint(Graphics g) {
@@ -686,35 +688,43 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		}
 		for (int i = 0; i < number_of_indicators; i++) {
 			// Indicator Line
-			g2.draw(new Line2D.Double(indicator_x * getScaleX() + margin, MarginTop, indicator_x * getScaleX() + margin, MarginTop - 3));
+			g2.draw(new Line2D.Double(-(int) this.getOffsetX() + indicator_x * getScaleX() + margin, MarginTop, -(int) this.getOffsetX() + indicator_x * getScaleX() + margin, MarginTop - 3));
 			// Indicator Label
-			g2.drawString(indicator + "s", margin - 5 + (indicator_x * getScaleX()), MarginTop - 5);
+			g2.drawString(indicator + "s", -(int) this.getOffsetX() + margin - 5 + (indicator_x * getScaleX()), MarginTop - 5);
 			indicator_x += 10 * scale_decade;
 			indicator += 10 * scale_decade;
 		}
 
 		// Axis
 		g2.setColor(AxisColor);
-		g2.draw(new Line2D.Double(margin, this.getHeight() - margin, this.getWidth(), this.getHeight() - margin));
-		g2.drawString("0", margin, this.getHeight() - margin - 2);
-		g2.draw(new Line2D.Double(margin, this.getHeight() - margin - (getScaleY() * 1000), this.getWidth(), this.getHeight() - margin - (getScaleY() * 1000)));
-		g2.drawString("1000", margin, this.getHeight() - margin - (getScaleY() * 1000) - 2);
+
+		// Axis
+		g2.draw(new Line2D.Double(-(int) this.getOffsetX() + margin, (int) this.getOffsetY() + this.getHeight() - margin, this.getWidth(), (int) this.getOffsetY() + this.getHeight() - margin));
+
+		// "0" Label
+		g2.drawString("0", -(int) this.getOffsetX() + margin, (int) this.getOffsetY() + this.getHeight() - margin - 2);
+
+		// Small indicator for "0"
+		g2.draw(new Line2D.Double(-(int) this.getOffsetX() + margin, (int) this.getOffsetY() + this.getHeight() - margin - (getScaleY() * 1000), -(int) this.getOffsetX() + this.getWidth(), (int) this.getOffsetY() + this.getHeight() - margin - (getScaleY() * 1000)));
+
+		// g2.drawString("1000", margin, (int) this.getOffsetY() +
+		// this.getHeight() - margin - (getScaleY() * 1000) - 2);
 
 		// KeyFrame Lines
 		g2.setColor(LineColor);
 		g2.setStroke(new BasicStroke(2.0f));
 		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel) - 1; i++) {
-			int X1 = (int) (margin + this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX());
-			int Y1 = (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY()));
-			int X2 = (int) (margin + this.GetKeyframe(this.ActiveChannel, i + 1).GetTime() * getScaleX());
-			int Y2 = (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter(this.ActiveChannel) * getScaleY()));
+			int X1 = -(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX());
+			int Y1 = (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY()));
+			int X2 = -(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i + 1).GetTime() * getScaleX());
+			int Y2 = (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter(this.ActiveChannel) * getScaleY()));
 			g2.draw(new Line2D.Double(X1, Y1, X2, Y2));
 		}
 
 		// Keyframe dots
 		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel); i++) {
-			int X = (int) (margin + (this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()) - KeyframeRectangleDimension / 2);
-			int Y = (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY())) - KeyframeRectangleDimension / 2;
+			int X = -(int) this.getOffsetX() + (int) (margin + (this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()) - KeyframeRectangleDimension / 2);
+			int Y = (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY())) - KeyframeRectangleDimension / 2;
 			if (this.GetKeyframe(this.ActiveChannel, i).isHightlighted()) {
 				g2.setColor(HightlightedKeyframeRectangleColor);
 				g2.drawString(this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) + "", X + 3, Y - 4);
@@ -739,7 +749,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		// Shutter Release Circles
 		g2.setColor(ShutterReleaseCircleColor);
 		for (int i = 1; i < 20; i++) { // TODO 20 is just a placeholder for now
-			int X = (int) (margin + (i * this.getTimelapseShutterPeriod() * getScaleX()) - ShutterCircleDimension / 2);
+			int X = -(int) this.getOffsetX() + (int) (margin + (i * this.getTimelapseShutterPeriod() * getScaleX()) - ShutterCircleDimension / 2);
 			int Y = (int) (MarginTop + 5);
 			g2.fillOval(X, Y, ShutterCircleDimension, ShutterCircleDimension);
 		}
@@ -747,21 +757,21 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		// Current Time Indicator
 		g2.setColor(CurrentTimeIndicatorColor);
 		g2.setStroke(new BasicStroke(1.0f));
-		int X = (int) (margin + getScaleX() * this.GetCurrentTime());
+		int X = -(int) this.getOffsetX() + (int) (margin + getScaleX() * this.GetCurrentTime());
 		g2.draw(new Line2D.Double(X, margin, X, this.getHeight() - margin));
 
 		// Evaluation Time Indicator
 		g2.setColor(EvaluationTimeIndicatorColor);
 		g2.setStroke(new BasicStroke(1.0f));
-		X = (int) (margin + getScaleX() * this.getEvaluateTime());
+		X = -(int) this.getOffsetX() + (int) (margin + getScaleX() * this.getEvaluateTime());
 		g2.draw(new Line2D.Double(X, margin, X, this.getHeight() - margin));
 
 		// Evaluation Time Value
-		X = (int) (margin + getScaleX() * this.getEvaluateTime());
-		int Y = (int) (this.getHeight() - margin - this.GetTargetValue(this.getEvaluateTime(), this.GetActiveChannel()) * getScaleY());
+		X = -(int) this.getOffsetX() + (int) (margin + getScaleX() * this.getEvaluateTime());
+		int Y = (int) (this.getOffsetY()) + (int) (this.getHeight() - margin - this.GetTargetValue(this.getEvaluateTime(), this.GetActiveChannel()) * getScaleY());
 		g2.setColor(EvaluationTimeIndicatorColor);
 		g2.drawString(this.GetTargetValue(this.getEvaluateTime(), this.GetActiveChannel()) + "", X + 3, Y - 4);
-		g2.fillRect(X-1, Y, KeyframeRectangleDimension-1, KeyframeRectangleDimension-1);
+		g2.fillRect(X - 1, Y, KeyframeRectangleDimension - 1, KeyframeRectangleDimension - 1);
 	}
 
 	/*
@@ -782,6 +792,22 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 	public void setScaleY(float ScaleY) {
 		this.ScaleY = ScaleY;
+	}
+
+	public float getOffsetX() {
+		return OffsetX;
+	}
+
+	public void setOffsetX(float OffsetX) {
+		this.OffsetX = OffsetX;
+	}
+
+	public float getOffsetY() {
+		return OffsetY;
+	}
+
+	public void setOffsetY(float OffsetY) {
+		this.OffsetY = OffsetY;
 	}
 
 	public float getTimelapseShutterPeriod() {
