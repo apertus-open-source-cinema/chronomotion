@@ -94,7 +94,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		addMouseListener(new java.awt.event.MouseAdapter() {
 
 			@Override
-			public void mouseClicked(java.awt.event.MouseEvent evt) {
+			public void mousePressed(java.awt.event.MouseEvent evt) {
 
 				// Get coordinates
 				int x = evt.getX();
@@ -102,7 +102,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 				float value = ((float) (x - margin) / me.getScaleX());
 
-				// snapping
+				// Snapping
 				value = Math.round(value / me.getTimelapseShutterPeriod()) * me.getTimelapseShutterPeriod();
 
 				// Set the Evaluate Time
