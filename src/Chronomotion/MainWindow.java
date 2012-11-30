@@ -740,19 +740,19 @@ public class MainWindow implements Runnable {
 				// tilt_totalsteps.setText(MerlinController.GetTotalSteps(AXIS.TILT)
 				// +
 				// "");
-				lblPosPanDegrees.setText(((float) Math.round(((float) Parent.GetMerlinController().GetCurrentSteps(AXIS.PAN) - 8388608) / (float) Parent.GetMerlinController().GetTotalSteps(AXIS.PAN) * 360.0f * 10000.0f) / 10000.0f) + "");
-				lblPosTiltDegrees.setText(((float) Math.round(((float) Parent.GetMerlinController().GetCurrentSteps(AXIS.TILT) - 8388608) / Parent.GetMerlinController().GetTotalSteps(AXIS.TILT) * 360.0f * 10000.0f) / 10000.0f) + "");
+				lblPosPanDegrees.setText(((float) Math.round(((float) Parent.GetMerlinController().GetCurrentSteps(AXIS.PAN) - 8388608) / (float) Parent.GetMerlinController().GetTotalSteps(AXIS.PAN) * 360.0f * 100.0f) / 100.0f) + " °");
+				lblPosTiltDegrees.setText(((float) Math.round(((float) Parent.GetMerlinController().GetCurrentSteps(AXIS.TILT) - 8388608) / Parent.GetMerlinController().GetTotalSteps(AXIS.TILT) * 360.0f * 100.0f) / 100.0f) + " °");
 
 				int delta_pan_steps = (int) ((Parent.GetMerlinController().GetCurrentSteps(AXIS.PAN) - last_pan_steps_per_second) / (float) delta_time * 1000.0f);
 				// pan_steps_per_second.setText(delta_pan_steps + "");
 				last_pan_steps_per_second = Parent.GetMerlinController().GetCurrentSteps(AXIS.PAN);
-				lblSpeedPanDegrees.setText(Math.round((float) delta_pan_steps / (float) Parent.GetMerlinController().GetTotalSteps(AXIS.PAN) * 1000.0f) / 1000.0f * 360.0f * 60 + "");
+				lblSpeedPanDegrees.setText(Math.round((float) delta_pan_steps / (float) Parent.GetMerlinController().GetTotalSteps(AXIS.PAN) * 100.0f) / 100.0f * 360.0f * 60 + " °");
 
 				int delta_tilt_steps = (int) ((Parent.GetMerlinController().GetCurrentSteps(AXIS.TILT) - last_tilt_steps_per_second) / (float) delta_time * 1000.0f);
 				// tilt_steps_per_second.setText(delta_tilt_steps + "");
 				last_tilt_steps_per_second = Parent.GetMerlinController().GetCurrentSteps(AXIS.TILT);
-				lblSpeedPanDegrees.setText(Math.round((float) delta_tilt_steps / (float) Parent.GetMerlinController().GetTotalSteps(AXIS.TILT) * 1000.0f) / 1000.0f * 360.0f * 60 + "");
-
+				lblSpeedTiltDegrees.setText(Math.round((float) delta_tilt_steps / (float) Parent.GetMerlinController().GetTotalSteps(AXIS.TILT) * 100.0f) / 100.0f * 360.0f * 60 + " °");
+				
 				// pan_sidereal.setText(MerlinController.GetSiderealRate(AXIS.PAN)
 				// +
 				// "");

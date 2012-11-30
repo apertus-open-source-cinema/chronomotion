@@ -47,8 +47,9 @@ public class CommunicationManager implements Runnable {
 	private int[] _SiderealRate;
 	private boolean Connected = false;
 	static boolean debug_serial_commands = false;
+	private Chronomotion Parent;
 
-	public CommunicationManager() {
+	public CommunicationManager(Chronomotion parent) {
 		_CommandList = new ArrayList<String>();
 		_readytosend = true;
 		_TotalSteps = new int[2];
@@ -56,6 +57,8 @@ public class CommunicationManager implements Runnable {
 		_TotalSteps[1] = 1; // to prevent division by zero
 		_CurrentSteps = new int[2];
 		_SiderealRate = new int[2];
+
+		Parent = parent;
 	}
 
 	void SetCurrentSteps(int steps, AXIS axis) {
@@ -111,6 +114,8 @@ public class CommunicationManager implements Runnable {
 		ExecuteCommand(":S" + TranslateAxis(Axis) + TranslatePosition(position) + "\r");
 
 		StartMotor(Axis);
+
+		Parent.WriteLogtoConsole("Axis: " + Axis + " GOTO Position [pos]: " + position);
 	}
 
 	void GotoPosition(AXIS Axis, float degrees) {
@@ -123,6 +128,8 @@ public class CommunicationManager implements Runnable {
 		ExecuteCommand(":S" + TranslateAxis(Axis) + TranslatePosition(pos) + "\r");
 
 		StartMotor(Axis);
+
+		Parent.WriteLogtoConsole("Axis: " + Axis + " GOTO Position [°]: " + degrees);
 	}
 
 	// Convert from ENUM to int

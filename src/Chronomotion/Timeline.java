@@ -81,12 +81,12 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 		// For Testing
 		AddKeyFrame(0, "Tilt", 0.0f);
-		AddKeyFrame(30, "Tilt", 50.0f);
-		AddKeyFrame(50, "Tilt", 30.0f);
+		AddKeyFrame(30, "Tilt", 2.0f);
+		AddKeyFrame(60, "Tilt", -3.0f);
 
 		AddKeyFrame(0, "Pan", 0.0f);
-		AddKeyFrame(10, "Pan", 30.0f);
-		AddKeyFrame(50, "Pan", 50.0f);
+		AddKeyFrame(10, "Pan", 3.0f);
+		AddKeyFrame(60, "Pan", -1.0f);
 
 		this.OrderKeyframes();
 
@@ -211,13 +211,13 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	 * in the future.
 	 */
 	public float GetTargetValue(float time, String channel) {
-		float PreviousKeyframeTime = GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, time), channel);
-		float NextKeyframeTime = GetTime(GetNextKeyframeIndex(this.ActiveChannel, time), channel);
+		float PreviousKeyframeTime = GetTime(GetPreviousKeyframeIndex(channel, time), channel);
+		float NextKeyframeTime = GetTime(GetNextKeyframeIndex(channel, time), channel);
 		float delta_time = NextKeyframeTime - PreviousKeyframeTime;
 
-		float time_factor_current_segment = (time - GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, time), channel)) / delta_time;
-		float d = GetKeyframe(channel, GetPreviousKeyframeIndex(this.ActiveChannel, time)).GetParameter(channel);
-		float k = (GetKeyframe(channel, GetNextKeyframeIndex(this.ActiveChannel, time)).GetParameter(channel) - GetKeyframe(channel, GetPreviousKeyframeIndex(this.ActiveChannel, time)).GetParameter(channel)) / delta_time;
+		float time_factor_current_segment = (time - GetTime(GetPreviousKeyframeIndex(channel, time), channel)) / delta_time;
+		float d = GetKeyframe(channel, GetPreviousKeyframeIndex(channel, time)).GetParameter(channel);
+		float k = (GetKeyframe(channel, GetNextKeyframeIndex(channel, time)).GetParameter(channel) - GetKeyframe(channel, GetPreviousKeyframeIndex(channel, time)).GetParameter(channel)) / delta_time;
 		float ret = (k * time_factor_current_segment * delta_time + d);
 		return ret;
 	}

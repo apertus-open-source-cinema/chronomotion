@@ -87,7 +87,7 @@ public class Chronomotion {
 		ConWindow = new ConnectWindow(this);
 		// frame.add(MWindow);
 
-		MerlinController = new CommunicationManager();
+		MerlinController = new CommunicationManager(this);
 	}
 
 	public ConnectWindow GetConnectWindow() {
