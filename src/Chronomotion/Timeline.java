@@ -407,22 +407,31 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 					}
 				}
 				if (CurrentPhase == HEADPHASE.MOVING) {
-					// Check if target position has been reached
-					int error_treshhold = 150;
-					// int targetsteps = (int) ((this.GetParameter(
-					// GetNextKeyframeIndex(GetCurrentTime()), "tilt")
-					// * (float) Parent.MerlinController
-					// .GetTotalSteps(AXIS.PAN) / 360.0f));
-					// int delta_tilt_steps = Parent.MerlinController
-					// .GetCurrentSteps(AXIS.TILT) - 8388608 - targetsteps;
-					// if ((delta_tilt_steps < error_treshhold)) {
-					// target reached
-					// this.ChangeHeadState(HEADPHASE.WAITING);
-					// }
+
+					/*
+					 * The following block tries to implement semiautomatic
+					 * target tracking where instead of a GOTO command to the
+					 * head the position is controlled and changed by the
+					 * Chronomotion software. This will result in more accurate
+					 * position finding but a longer movement phase
+					 * 
+					 * // Check if target position has been reached // we can't
+					 * reach the target 100% so this is the threshold // which
+					 * is considered "good enough" int error_threshold = 150;
+					 * int targetsteps = (int)
+					 * ((this.GetParameter(GetNextKeyframeIndex
+					 * (GetCurrentTime()), "Tilt") * (float)
+					 * Parent.MerlinController.GetTotalSteps(AXIS.PAN) /
+					 * 360.0f)); int delta_tilt_steps =
+					 * Parent.MerlinController.GetCurrentSteps(AXIS.TILT) -
+					 * 8388608 - targetsteps;
+					 * 
+					 * if ((delta_tilt_steps < error_threshold)) { // target
+					 * reached this.ChangeHeadState(HEADPHASE.WAITING); }
+					 */
 
 					// we reached the keyframe time, likely the head was not
 					// able to reach the position in time -> bad
-
 					if (this.GetCurrentTime() > this.NextTargetShutterReleaseTime)
 						this.ChangeHeadState(HEADPHASE.WAITING);
 
@@ -473,14 +482,13 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(GetCurrentTime());
 
 			Parent.WriteLogtoConsole("Next Frame at " + NextTargetShutterReleaseTime + " seconds");
-			Parent.WriteLogtoConsole("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "tilt"));
-			Parent.WriteLogtoConsole("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "pan"));
+			Parent.WriteLogtoConsole("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "Pan"));
+			Parent.WriteLogtoConsole("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "Tilt"));
 
-			// float NextShootParameter =
-			// this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()),
-			// this.ActiveChannel);
-			// Parent.GetMerlinController().GotoPosition(AXIS.TILT,
-			// NextShootParameter);
+			float NextShootParameter_Pan = this.GetTargetValue(NextTargetShutterReleaseTime, "Pan");
+			float NextShootParameter_Tilt = this.GetTargetValue(NextTargetShutterReleaseTime, "Tilt");
+			Parent.GetMerlinController().GotoPosition(AXIS.PAN, NextShootParameter_Pan);
+			Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter_Tilt);
 
 			Parent.WriteLogtoConsole("Changing State to: " + newstate);
 			PhaseStateLabel.setText("Moving");
@@ -492,15 +500,18 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			NextTargetShutterReleaseTime = GetNextShutterReleaseTime(GetCurrentTime());
 
 			Parent.WriteLogtoConsole("Next Frame at " + NextTargetShutterReleaseTime + " seconds");
-			Parent.WriteLogtoConsole("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "tilt"));
-			Parent.WriteLogtoConsole("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "pan"));
+			Parent.WriteLogtoConsole("Next Frame Pan: " + this.GetTargetValue(NextTargetShutterReleaseTime, "Pan"));
+			Parent.WriteLogtoConsole("Next Frame Tilt: " + this.GetTargetValue(NextTargetShutterReleaseTime, "Tilt"));
 
-			// float NextShootParameter =
-			// this.GetTargetValue(this.GetNextShutterReleaseTime(GetCurrentTime()),
-			// this.ActiveChannel);
-			// Parent.GetMerlinController().GotoPosition(AXIS.TILT,
-			// NextShootParameter);
-
+			float NextShootParameter_Pan = this.GetTargetValue(NextTargetShutterReleaseTime, "Pan");
+			float NextShootParameter_Tilt = this.GetTargetValue(NextTargetShutterReleaseTime, "Tilt");
+			Parent.GetMerlinController().GotoPosition(AXIS.PAN, NextShootParameter_Pan);
+			Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter_Tilt);
+			
+			Parent.WriteLogtoConsole("Changing State to: " + newstate);
+			PhaseStateLabel.setText("Moving");
+			CurrentPhase = HEADPHASE.MOVING;
+			
 		} else if (newstate == HEADPHASE.POSTSHOOTDELAY) {
 			PhaseStateLabel.setText("Post Shoot Delay");
 			CurrentPhase = HEADPHASE.POSTSHOOTDELAY;
@@ -645,12 +656,12 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	private Color KeyframeRectangleColor = new Color(90, 90, 90);
 	private Color GOTOIndicatorColor = new Color(100, 255, 120);
 	private Color TimeBarColor = new Color(190, 190, 190);
-	private Color ShutterReleaseCircleColor = new Color(90, 220, 90);
-	private Color HightlightedKeyframeRectangleColor = new Color(255, 0, 0);
+	private Color ShutterReleaseCircleColor = new Color(158, 193, 216);
+	private Color HightlightedKeyframeRectangleColor = new Color(47, 61, 129);
 	private Color AxisColor = new Color(110, 110, 110);
 	private Color LineColor = new Color(40, 40, 40);
 	private Color CurrentTimeIndicatorColor = new Color(200, 40, 40);
-	private Color EvaluationTimeIndicatorColor = new Color(40, 200, 40);
+	private Color EvaluationTimeIndicatorColor = new Color(58, 68, 118);
 	private int KeyframeRectangleDimension = 4;
 	private int ShutterCircleDimension = 8;
 	private int GOTOIndicatorDimension = 4;

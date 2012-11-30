@@ -357,7 +357,7 @@ public class MainWindow implements Runnable {
 		InfoPanel.add(lblSpeedTiltDegrees, "cell 5 1");
 
 		TimelapseParameterPanel = new JPanel();
-		TimelapseParameterPanel.setBorder(new TitledBorder(null, "Time lapse parameters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		TimelapseParameterPanel.setBorder(new TitledBorder(null, "Time Lapse Parameters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		frame.getContentPane().add(TimelapseParameterPanel, "cell 2 3,alignx left,aligny top");
 		TimelapseParameterPanel.setLayout(new MigLayout("", "[140px][87.00px]", "[20px][20px]"));
 
