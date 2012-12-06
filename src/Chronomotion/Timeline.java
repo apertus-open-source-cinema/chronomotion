@@ -31,7 +31,15 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.logging.Level;
@@ -39,6 +47,7 @@ import java.util.logging.Logger;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import com.caffeineowl.graphics.bezier.*;
 
 enum STATE {
 
@@ -50,7 +59,8 @@ enum HEADPHASE {
 	POSTSHOOTDELAY, MOVING, WAITING, STOPPED, RELEASINGSHUTTER
 }
 
-public class Timeline extends JPanel implements Runnable, java.io.Serializable {
+public class Timeline extends JPanel implements Runnable, java.io.Serializable, MouseListener, MouseMotionListener,
+		KeyListener {
 
 	private Timeline me;
 	private float CurrentTime = 0;
@@ -67,26 +77,53 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	private float TimelapseShutterPeriod = 5;
 	private float PostShootDelay = 1;
 	private Chronomotion Parent;
+	private MainWindow Mainwindow;
 	private HEADPHASE CurrentPhase = HEADPHASE.STOPPED;
 	private JLabel PhaseStateLabel;
 	private String ActiveChannel;
+	private int dragIndex = NOT_DRAGGING;
+	private final static int DRAG_THRESHHOLD = 5;
+	private final static int NOT_DRAGGING = -1;
 
 	public Timeline() {
 		me = this;
 		CurrentState = STATE.STOPPED;
 		Updater = new Thread(this);
 		Worker = new Thread(this);
-
+		addMouseListener(this);
+		addMouseMotionListener(this);
+		addKeyListener(this);
+		setFocusable(true);
 		ActiveChannel = "Tilt";
 
 		// For Testing
-		AddKeyFrame(0, "Tilt", 0.0f);
-		AddKeyFrame(30, "Tilt", 2.0f);
-		AddKeyFrame(60, "Tilt", -3.0f);
+		Keyframe K1 = new Keyframe(0);
+		K1.SetParameter("Tilt", 5.0f);
+		K1.SetParameter("Bezier-X", 10.0f);
+		K1.SetParameter("Bezier-Y", 10.0f);
+		Keyframes.add(K1);
+
+		Keyframe K2 = new Keyframe(30);
+		K2.SetParameter("Tilt", 50.0f);
+		K2.SetParameter("Bezier-X", 5.0f);
+		K2.SetParameter("Bezier-Y", 2.0f);
+		Keyframes.add(K2);
+
+		Keyframe K3 = new Keyframe(60);
+		K3.SetParameter("Tilt", -3.0f);
+		K3.SetParameter("Bezier-X", 5.0f);
+		K3.SetParameter("Bezier-Y", -3.0f);
+		Keyframes.add(K3);
 
 		AddKeyFrame(0, "Pan", 0.0f);
+		AddKeyFrame(0, "Bezier-X", 5.0f);
+		AddKeyFrame(0, "Bezier-Y", 5.0f);
 		AddKeyFrame(10, "Pan", 3.0f);
+		AddKeyFrame(10, "Bezier-X", 5.0f);
+		AddKeyFrame(10, "Bezier-Y", 5.0f);
 		AddKeyFrame(60, "Pan", -1.0f);
+		AddKeyFrame(60, "Bezier-X", 5.0f);
+		AddKeyFrame(60, "Bezier-Y", 4.0f);
 
 		this.OrderKeyframes();
 
@@ -121,8 +158,20 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		PhaseStateLabel = newPhaseStateLabel;
 	}
 
+	/*
+	 * Set Chronomotion Parent Class to allow setting parameters or using
+	 * functions from external classes
+	 */
 	public void SetParent(Chronomotion parent) {
 		this.Parent = parent;
+	}
+
+	/*
+	 * Set Chronomotion Mainwindow Class to allow altering the GUI in which the
+	 * timeline is embedded in
+	 */
+	public void SetMainWindow(MainWindow MainWindow) {
+		this.Mainwindow = MainWindow;
 	}
 
 	/*
@@ -170,10 +219,10 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		if (CurrentState == STATE.RUNNING) {
 			if (StartTime != 0) {
 				if (GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime()) > 0) {
-					float PreviousKeyframeTime = GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime()), this.ActiveChannel);
-					float NextKeyframeTime = GetTime(GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime()), this.ActiveChannel);
+					float PreviousKeyframeTime = GetTime(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime()));
+					float NextKeyframeTime = GetTime(this.ActiveChannel, GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime()));
 					float delta_time = NextKeyframeTime - PreviousKeyframeTime;
-					float time_factor_current_segment = (GetCurrentTime() - GetTime(GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime()), this.ActiveChannel)) / delta_time;
+					float time_factor_current_segment = (GetCurrentTime() - GetTime(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime()))) / delta_time;
 					float d = GetKeyframe(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel);
 
 					float k = (GetKeyframe(this.ActiveChannel, GetNextKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel) - GetKeyframe(this.ActiveChannel, GetPreviousKeyframeIndex(this.ActiveChannel, GetCurrentTime())).GetParameter(this.ActiveChannel)) / delta_time;
@@ -211,15 +260,57 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	 * in the future.
 	 */
 	public float GetTargetValue(float time, String channel) {
-		float PreviousKeyframeTime = GetTime(GetPreviousKeyframeIndex(channel, time), channel);
-		float NextKeyframeTime = GetTime(GetNextKeyframeIndex(channel, time), channel);
+
+		float PreviousKeyframeTime = GetTime(channel, GetPreviousKeyframeIndex(channel, time));
+		float NextKeyframeTime = GetTime(channel, GetNextKeyframeIndex(channel, time));
 		float delta_time = NextKeyframeTime - PreviousKeyframeTime;
 
-		float time_factor_current_segment = (time - GetTime(GetPreviousKeyframeIndex(channel, time), channel)) / delta_time;
-		float d = GetKeyframe(channel, GetPreviousKeyframeIndex(channel, time)).GetParameter(channel);
-		float k = (GetKeyframe(channel, GetNextKeyframeIndex(channel, time)).GetParameter(channel) - GetKeyframe(channel, GetPreviousKeyframeIndex(channel, time)).GetParameter(channel)) / delta_time;
-		float ret = (k * time_factor_current_segment * delta_time + d);
-		return ret;
+		// float time_factor_current_segment = (time - GetTime(channel,
+		// GetPreviousKeyframeIndex(channel, time))) / delta_time;
+
+		// float Y1 = GetKeyframe(channel, GetPreviousKeyframeIndex(channel,
+		// time)).GetParameter(channel);
+
+		Point2D.Double P1 = new Point2D.Double(this.GetKeyframe(channel, GetPreviousKeyframeIndex(channel, time)).GetTime(), this.GetKeyframe(channel, GetPreviousKeyframeIndex(channel, time)).GetParameter(channel));
+		Point2D.Double P2 = new Point2D.Double(this.GetKeyframe(channel, GetNextKeyframeIndex(channel, time)).GetTime(), this.GetKeyframe(channel, GetNextKeyframeIndex(channel, time)).GetParameter(channel));
+
+		Point2D.Double ctrl1 = new Point2D.Double(P1.x + this.GetKeyframe(channel, GetPreviousKeyframeIndex(channel, time)).GetParameter("Bezier-X"), P1.y + (this.GetKeyframe(channel, GetPreviousKeyframeIndex(channel, time)).GetParameter("Bezier-Y")));
+		Point2D.Double ctrl2 = new Point2D.Double(P2.x - this.GetKeyframe(channel, GetNextKeyframeIndex(channel, time)).GetParameter("Bezier-X"), P2.y - (this.GetKeyframe(channel, GetNextKeyframeIndex(channel, time)).GetParameter("Bezier-Y")));
+
+		/*
+		 * float k = (GetKeyframe(channel, GetNextKeyframeIndex(channel,
+		 * time)).GetParameter(channel) - GetKeyframe(channel,
+		 * GetPreviousKeyframeIndex(channel, time)).GetParameter(channel)) /
+		 * delta_time; float ret = (k * time_factor_current_segment * delta_time
+		 * + d); return ret;
+		 */
+
+		// Bezier
+		CubicCurve2D.Double cubicCurve = new CubicCurve2D.Double(P1.x, P1.y, ctrl1.x, ctrl1.y, ctrl2.x, ctrl2.y, P2.x, P2.y);
+		// cubicCurve.g
+		// cubicCurve.
+		BezierUtils Bezierutils = new BezierUtils();
+		Point2D point;
+
+		/*
+		 * double target_precision = 3; double current_precision = 0; double
+		 * threshold = 0; int iterator = 0; while (current_precision <
+		 * target_precision) { while (iterator * Math.pow(10,
+		 * -current_precision) <= 1) { point = Bezierutils.pointOnCurve(iterator
+		 * * Math.pow(10, -current_precision), cubicCurve, null); } iterator++;
+		 * if (threshold < Math.abs(point.getX() - time)){ current_precision } }
+		 */
+		double temp = 10;
+		double accuracy = 999999;
+		for (int i = 0; i < (10 * delta_time); i++) {
+			point = Bezierutils.pointOnCurve((i / (10 * delta_time)), cubicCurve, null);
+			if (Math.abs(accuracy) > Math.abs(time - point.getX())) {
+				temp = point.getY();
+				accuracy = Math.abs(time - point.getX());
+			}
+		}
+
+		return (float) temp;
 	}
 
 	/*
@@ -507,11 +598,11 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 			float NextShootParameter_Tilt = this.GetTargetValue(NextTargetShutterReleaseTime, "Tilt");
 			Parent.GetMerlinController().GotoPosition(AXIS.PAN, NextShootParameter_Pan);
 			Parent.GetMerlinController().GotoPosition(AXIS.TILT, NextShootParameter_Tilt);
-			
+
 			Parent.WriteLogtoConsole("Changing State to: " + newstate);
 			PhaseStateLabel.setText("Moving");
 			CurrentPhase = HEADPHASE.MOVING;
-			
+
 		} else if (newstate == HEADPHASE.POSTSHOOTDELAY) {
 			PhaseStateLabel.setText("Post Shoot Delay");
 			CurrentPhase = HEADPHASE.POSTSHOOTDELAY;
@@ -620,7 +711,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	/*
 	 * Get the time of a keyframe with index from the selected channel
 	 */
-	public float GetTime(int index, String channel) {
+	public float GetTime(String channel, int index) {
 		if (index > this.GetNumberOfKeyframes(channel) - 1) {
 			return -1.0f;
 		} else if (index < 0) {
@@ -634,7 +725,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	 * Get the time of a keyframe with index from the current active channel
 	 */
 	public float GetTime(int index) {
-		return GetTime(index, this.ActiveChannel);
+		return GetTime(this.ActiveChannel, index);
 	}
 
 	/*
@@ -660,6 +751,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 	private Color HightlightedKeyframeRectangleColor = new Color(47, 61, 129);
 	private Color AxisColor = new Color(110, 110, 110);
 	private Color LineColor = new Color(40, 40, 40);
+	private Color BezierTangentColor = new Color(80, 80, 80);
 	private Color CurrentTimeIndicatorColor = new Color(200, 40, 40);
 	private Color EvaluationTimeIndicatorColor = new Color(58, 68, 118);
 	private int KeyframeRectangleDimension = 4;
@@ -721,18 +813,41 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 		// g2.drawString("1000", margin, (int) this.getOffsetY() +
 		// this.getHeight() - margin - (getScaleY() * 1000) - 2);
 
-		// KeyFrame Lines
+		// Animation Lines
 		g2.setColor(LineColor);
 		g2.setStroke(new BasicStroke(2.0f));
 		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel) - 1; i++) {
-			int X1 = -(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX());
-			int Y1 = (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY()));
-			int X2 = -(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i + 1).GetTime() * getScaleX());
-			int Y2 = (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter(this.ActiveChannel) * getScaleY()));
-			g2.draw(new Line2D.Double(X1, Y1, X2, Y2));
+			/*
+			 * Linear - deprecated
+			 * 
+			 * int X1 = -(int) this.getOffsetX() + (int) (margin +
+			 * this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX());
+			 * int Y1 = (int) this.getOffsetY() + (int) (this.getHeight() -
+			 * margin - (this.GetKeyframe(this.ActiveChannel,
+			 * i).GetParameter(this.ActiveChannel) * getScaleY())); int X2 =
+			 * -(int) this.getOffsetX() + (int) (margin +
+			 * this.GetKeyframe(this.ActiveChannel, i + 1).GetTime() *
+			 * getScaleX()); int Y2 = (int) this.getOffsetY() + (int)
+			 * (this.getHeight() - margin -
+			 * (this.GetKeyframe(this.ActiveChannel, i +
+			 * 1).GetParameter(this.ActiveChannel) * getScaleY())); g2.draw(new
+			 * Line2D.Double(X1, Y1, X2, Y2));
+			 */
+
+			// Bezier
+
+			Point2D.Double P1 = new Point2D.Double(-(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()), (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY())));
+			Point2D.Double P2 = new Point2D.Double(-(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i + 1).GetTime() * getScaleX()), (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter(this.ActiveChannel) * getScaleY())));
+
+			Point2D.Double ctrl1 = new Point2D.Double(P1.x + this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-X") * getScaleX(), P1.y - (this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-Y") * getScaleY()));
+			Point2D.Double ctrl2 = new Point2D.Double(P2.x - this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter("Bezier-X") * getScaleX(), P2.y + (this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter("Bezier-Y") * getScaleY()));
+
+			CubicCurve2D.Double cubicCurve = new CubicCurve2D.Double(P1.x, P1.y, ctrl1.x, ctrl1.y, ctrl2.x, ctrl2.y, P2.x, P2.y);
+
+			g2.draw(cubicCurve);
 		}
 
-		// Keyframe dots
+		// Keyframe Dots
 		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel); i++) {
 			int X = -(int) this.getOffsetX() + (int) (margin + (this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()) - KeyframeRectangleDimension / 2);
 			int Y = (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY())) - KeyframeRectangleDimension / 2;
@@ -743,6 +858,56 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 				g2.setColor(KeyframeRectangleColor);
 			}
 			g2.fillRect(X, Y, KeyframeRectangleDimension, KeyframeRectangleDimension);
+		}
+
+		// Keyframe Bezier Dots
+		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel); i++) {
+			// First and last keyframe only has one bezier point, all others
+			// have two
+			if ((i == 0) || (i == this.GetNumberOfKeyframes(this.ActiveChannel) - 1)) {
+				Point2D.Double P1 = new Point2D.Double(-(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()), (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY())));
+				Point2D.Double ctrl1 = new Point2D.Double(P1.x + this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-X") * getScaleX(), P1.y + (this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-Y") * getScaleY()));
+				if (this.GetKeyframe(this.ActiveChannel, i).isHightlighted()) {
+					g2.setColor(HightlightedKeyframeRectangleColor);
+					g2.fillOval((int) ctrl1.x, (int) ctrl1.y, KeyframeRectangleDimension, KeyframeRectangleDimension);
+				}
+			} else {
+				// these keyframes have two bezier control points
+				Point2D.Double P1 = new Point2D.Double(-(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()), (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY())));
+				Point2D.Double ctrl1 = new Point2D.Double(P1.x + this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-X") * getScaleX(), P1.y - (this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-Y") * getScaleY()));
+				Point2D.Double ctrl2 = new Point2D.Double(P1.x - this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-X") * getScaleX(), P1.y + (this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-Y") * getScaleY()));
+				// Point2D.Double ctrl1 = new Point2D.Double(-(int)
+				// this.getOffsetX() + (int) (margin +
+				// this.GetKeyframe(this.ActiveChannel,
+				// i).GetParameter("Bezier-X"))
+				// * getScaleX(), (int) this.getOffsetY() + (int)
+				// (this.getHeight()
+				// - margin - (this.GetKeyframe(this.ActiveChannel,
+				// i).GetParameter("Bezier-Y") * getScaleY()))); // Control
+				if (this.GetKeyframe(this.ActiveChannel, i).isHightlighted()) {
+					g2.setColor(HightlightedKeyframeRectangleColor);
+					g2.fillOval((int) ctrl1.x - KeyframeRectangleDimension / 2, (int) ctrl1.y - KeyframeRectangleDimension / 2, KeyframeRectangleDimension, KeyframeRectangleDimension);
+					g2.fillOval((int) ctrl2.x - KeyframeRectangleDimension / 2, (int) ctrl2.y - KeyframeRectangleDimension / 2, KeyframeRectangleDimension, KeyframeRectangleDimension);
+				}
+			}
+		}
+
+		// Keyframe Bezier Lines
+		g2.setColor(BezierTangentColor);
+		g2.setStroke(new BasicStroke(1.0f));
+		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel) - 1; i++) {
+			if (this.GetKeyframe(this.ActiveChannel, i).isHightlighted()) {
+				Point2D.Double P1 = new Point2D.Double(-(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()), (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY())));
+
+				Point2D.Double ctrl1 = new Point2D.Double(P1.x + this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-X") * getScaleX(), P1.y - (this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-Y") * getScaleY()));
+				Point2D.Double ctrl2 = new Point2D.Double(P1.x - this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-X") * getScaleX(), P1.y + (this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-Y") * getScaleY()));
+
+				// Bezier Tangent for Point 1
+				g2.draw(new Line2D.Double(P1.x, P1.y, ctrl1.x, ctrl1.y));
+
+				// Bezier Tangent for Point 2
+				g2.draw(new Line2D.Double(P1.x, P1.y, ctrl2.x, ctrl2.y));
+			}
 		}
 
 		// Frame GOTO Indicators
@@ -852,5 +1017,137 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable {
 
 	public void SetEvaluateTime(long EvalTime) {
 		this.setEvaluateTime(EvalTime);
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		if (dragIndex == NOT_DRAGGING)
+			return;
+
+		// Calculate values from on-screen positions
+		float X = (e.getX() + this.getOffsetX() - margin) / getScaleX();
+		float Y = (this.getOffsetY() + this.getHeight() - margin - e.getY()) / getScaleY();
+
+		this.GetKeyframe(this.ActiveChannel, dragIndex).SetTime(X);
+		this.GetKeyframe(this.ActiveChannel, dragIndex).SetParameter(this.ActiveChannel, Y);
+
+		Mainwindow.TimelineHighlightKeyframeChange(dragIndex);
+
+		repaint();
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		Parent.WriteLogtoConsole("KEY");
+		keys(e);
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+	}
+
+	public void keys(KeyEvent e) {
+
+	}
+
+	/*
+	 * double click to add new keyframes to the timeline
+	 */
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		if (e.getClickCount() == 2 && !e.isConsumed()) {
+
+			e.consume();
+
+			// Calculate values from on-screen positions
+			float X = (e.getX() + this.getOffsetX() - margin) / getScaleX();
+			float Y = (this.getOffsetY() + this.getHeight() - margin - e.getY()) / getScaleY();
+
+			// this.GetKeyframe(this.ActiveChannel, dragIndex).SetTime(X);
+			// this.GetKeyframe(this.ActiveChannel,
+			// dragIndex).SetParameter(this.ActiveChannel, Y);
+
+			Keyframe K1 = new Keyframe(X);
+			K1.SetParameter(this.ActiveChannel, Y);
+			K1.SetParameter("Bezier-X", 10.0f);
+			K1.SetParameter("Bezier-Y", 0.0f);
+			Keyframes.add(K1);
+
+			this.OrderKeyframes();
+		}
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		dragIndex = NOT_DRAGGING;
+		int minDistance = Integer.MAX_VALUE;
+		int indexOfClosestPoint = -1;
+		for (int i = 0; i < this.GetNumberOfKeyframes(this.GetActiveChannel()); i++) {
+			int X = -(int) this.getOffsetX() + (int) (margin + (this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()) - KeyframeRectangleDimension / 2);
+			int Y = (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY())) - KeyframeRectangleDimension / 2;
+
+			int deltaX = X - e.getX();
+			int deltaY = Y - e.getY();
+			int distance = (int) (Math.sqrt(deltaX * deltaX + deltaY * deltaY));
+			if (distance < minDistance) {
+				minDistance = distance;
+				indexOfClosestPoint = i;
+			}
+		}
+
+		// Do nothing if the closest keyframe is further away than our
+		// DRAG_THRESHHOLD
+		if (minDistance > DRAG_THRESHHOLD)
+			return;
+		else {
+			dragIndex = indexOfClosestPoint;
+			this.GetKeyframe(this.ActiveChannel, dragIndex).setHightlighted(true);
+		}
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// Do nothing if no keyframe is being dragged
+		if (dragIndex == NOT_DRAGGING)
+			return;
+
+		// Calculate values from on-screen positions
+		float X = (e.getX() + this.getOffsetX() - margin) / getScaleX();
+		// float Y = (e.getY() - this.getOffsetY() - this.getHeight() + margin)
+		// / getScaleY();
+		float Y = (this.getOffsetY() + this.getHeight() - margin - e.getY()) / getScaleY();
+
+		this.GetKeyframe(this.ActiveChannel, dragIndex).SetTime(X);
+		this.GetKeyframe(this.ActiveChannel, dragIndex).SetParameter(this.ActiveChannel, Y);
+
+		Mainwindow.TimelineHighlightKeyframeChange(dragIndex);
+
+		dragIndex = NOT_DRAGGING;
+		this.OrderKeyframes();
+		repaint();
+	}
+
+	@Override
+	public void keyTyped(KeyEvent arg0) {
+		// TODO Auto-generated method stub
 	}
 }

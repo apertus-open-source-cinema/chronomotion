@@ -427,7 +427,7 @@ public class MainWindow implements Runnable {
 		AnimationPanel = new JPanel();
 		AnimationPanel.setBorder(new TitledBorder(null, "Animation", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		frame.getContentPane().add(AnimationPanel, "cell 0 4 3 1,grow");
-		AnimationPanel.setLayout(new MigLayout("", "[][][][][][][][][grow][grow][][][19.00]", "[][][grow][][][]"));
+		AnimationPanel.setLayout(new MigLayout("", "[][][][][][][][][grow][grow][grow][grow][][][19.00]", "[][][grow][][][]"));
 
 		lblNewLabel_4 = new JLabel("Time:");
 		AnimationPanel.add(lblNewLabel_4, "cell 0 0");
@@ -446,6 +446,12 @@ public class MainWindow implements Runnable {
 
 		lblValue = new JLabel("Value");
 		AnimationPanel.add(lblValue, "cell 9 0");
+
+		lblBezierTime = new JLabel("Bezier Time");
+		AnimationPanel.add(lblBezierTime, "cell 10 0");
+
+		lblNewLabel_5 = new JLabel("Bezier Value");
+		AnimationPanel.add(lblNewLabel_5, "cell 11 0");
 
 		lblTaget = new JLabel("Taget:");
 		AnimationPanel.add(lblTaget, "cell 0 1");
@@ -494,10 +500,6 @@ public class MainWindow implements Runnable {
 		AnimationPanel.add(TimelineEditTime, "cell 8 1,growx");
 		TimelineEditTime.setColumns(10);
 
-		TimelineEditValue = new JTextField();
-		AnimationPanel.add(TimelineEditValue, "cell 9 1,growx");
-		TimelineEditValue.setColumns(10);
-
 		TimelineEdit = new JButton("edit");
 		TimelineEdit.addMouseListener(new MouseAdapter() {
 			@Override
@@ -505,7 +507,19 @@ public class MainWindow implements Runnable {
 				TimelineEditPressed(e);
 			}
 		});
-		AnimationPanel.add(TimelineEdit, "cell 10 1,aligny top");
+
+		TimelineEditValue = new JTextField();
+		AnimationPanel.add(TimelineEditValue, "cell 9 1,growx");
+		TimelineEditValue.setColumns(10);
+
+		TimelineEditBezierTime = new JTextField();
+		AnimationPanel.add(TimelineEditBezierTime, "cell 10 1,growx");
+		TimelineEditBezierTime.setColumns(10);
+
+		TimelineEditBezierValue = new JTextField();
+		AnimationPanel.add(TimelineEditBezierValue, "cell 11 1,growx");
+		TimelineEditBezierValue.setColumns(10);
+		AnimationPanel.add(TimelineEdit, "cell 12 1,aligny top");
 
 		scrollPane = new JScrollPane();
 		AnimationPanel.add(scrollPane, "cell 0 2 2 1,alignx left,growy");
@@ -540,7 +554,7 @@ public class MainWindow implements Runnable {
 		scrollPane.setRowHeaderView(ChannelSelector);
 
 		scrollPane_1 = new JScrollPane();
-		AnimationPanel.add(scrollPane_1, "cell 2 2 9 1,grow");
+		AnimationPanel.add(scrollPane_1, "cell 2 2 11 1,grow");
 
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -567,12 +581,13 @@ public class MainWindow implements Runnable {
 		timeline1 = new Timeline();
 		timeline1.setName("timeline1"); // NOI18N
 		timeline1.SetParent(Parent);
+		timeline1.SetMainWindow(this);
 		timeline1.SetPhaseStateLabel(TimelineState);
 		scrollPane_1.setViewportView(timeline1);
 
 		SliderOffsetY = new JScrollBar();
 		SliderOffsetY.setValue(50);
-		AnimationPanel.add(SliderOffsetY, "cell 11 2,growy");
+		AnimationPanel.add(SliderOffsetY, "cell 13 2,growy");
 		SliderOffsetY.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderOffsetYUpdate();
@@ -593,7 +608,7 @@ public class MainWindow implements Runnable {
 		SliderScaleY.setValue(30);
 		SliderScaleY.setPaintTicks(true);
 		SliderScaleY.setOrientation(SwingConstants.VERTICAL);
-		AnimationPanel.add(SliderScaleY, "cell 12 2,growy");
+		AnimationPanel.add(SliderScaleY, "cell 14 2,growy");
 		SliderScaleY.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderScaleYUpdate();
@@ -612,7 +627,7 @@ public class MainWindow implements Runnable {
 
 		SliderOffsetX = new JScrollBar();
 		SliderOffsetX.setOrientation(JScrollBar.HORIZONTAL);
-		AnimationPanel.add(SliderOffsetX, "cell 2 3 9 1,growx");
+		AnimationPanel.add(SliderOffsetX, "cell 2 3 11 1,growx");
 		SliderOffsetX.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderOffsetXUpdate();
@@ -632,7 +647,7 @@ public class MainWindow implements Runnable {
 		SliderScaleX = new JSlider();
 		SliderScaleX.setMaximum(300);
 		SliderScaleX.setPaintTicks(true);
-		AnimationPanel.add(SliderScaleX, "cell 2 4 9 1,growx");
+		AnimationPanel.add(SliderScaleX, "cell 2 4 11 1,growx");
 		SliderScaleX.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderScaleXUpdate();
@@ -752,7 +767,7 @@ public class MainWindow implements Runnable {
 				// tilt_steps_per_second.setText(delta_tilt_steps + "");
 				last_tilt_steps_per_second = Parent.GetMerlinController().GetCurrentSteps(AXIS.TILT);
 				lblSpeedTiltDegrees.setText(Math.round((float) delta_tilt_steps / (float) Parent.GetMerlinController().GetTotalSteps(AXIS.TILT) * 100.0f) / 100.0f * 360.0f * 60 + " °");
-				
+
 				// pan_sidereal.setText(MerlinController.GetSiderealRate(AXIS.PAN)
 				// +
 				// "");
@@ -898,6 +913,10 @@ public class MainWindow implements Runnable {
 	private JSlider SliderScaleY;
 	private JScrollBar SliderOffsetY;
 	private JScrollBar SliderOffsetX;
+	private JLabel lblNewLabel_5;
+	private JLabel lblBezierTime;
+	private JTextField TimelineEditBezierTime;
+	private JTextField TimelineEditBezierValue;
 
 	private void TimelineNextKeyframePressed(java.awt.event.MouseEvent evt) {
 		highlightindex++;
@@ -908,10 +927,18 @@ public class MainWindow implements Runnable {
 		if (highlightindex > timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1) {
 			highlightindex = timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1;
 		}
+		TimelineHighlightKeyframeChange(highlightindex);
+	}
+
+	public void TimelineHighlightKeyframeChange(int newindex) {
+		highlightindex = newindex;
+
 		timeline1.SetKeyframeHighlight(timeline1.GetActiveChannel(), highlightindex);
 
 		TimelineEditValue.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter(timeline1.GetActiveChannel()) + "");
-		TimelineEditTime.setText(timeline1.GetTime(highlightindex) + "");
+		TimelineEditTime.setText(timeline1.GetTime(timeline1.GetActiveChannel(), highlightindex) + "");
+		TimelineEditBezierValue.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter("Bezier-Y") + "");
+		TimelineEditBezierTime.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter("Bezier-X") + "");
 	}
 
 	private void TimelinePrevKeyframePressed(java.awt.event.MouseEvent evt) {
@@ -922,15 +949,14 @@ public class MainWindow implements Runnable {
 		if (highlightindex > timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1) {
 			highlightindex = timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1;
 		}
-		timeline1.SetKeyframeHighlight(timeline1.GetActiveChannel(), highlightindex);
-
-		TimelineEditValue.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter(timeline1.GetActiveChannel()) + "");
-		TimelineEditTime.setText(timeline1.GetTime(highlightindex) + "");
+		TimelineHighlightKeyframeChange(highlightindex);
 	}
 
 	private void TimelineEditPressed(java.awt.event.MouseEvent evt) {
 		timeline1.SetParameter(timeline1.GetActiveChannel(), highlightindex, timeline1.GetActiveChannel(), Float.parseFloat(TimelineEditValue.getText()));
 		timeline1.SetTime(timeline1.GetActiveChannel(), highlightindex, Float.parseFloat(TimelineEditTime.getText()));
+		timeline1.SetParameter(timeline1.GetActiveChannel(), highlightindex, "Bezier-Y", Float.parseFloat(TimelineEditBezierValue.getText()));
+		timeline1.SetParameter(timeline1.GetActiveChannel(), highlightindex, "Bezier-X", Float.parseFloat(TimelineEditBezierTime.getText()));
 		timeline1.Redraw();
 	}
 
