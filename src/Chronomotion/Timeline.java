@@ -98,32 +98,36 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 
 		// For Testing
 		Keyframe K1 = new Keyframe(0);
-		K1.SetParameter("Tilt", 5.0f);
-		K1.SetParameter("Bezier-X", 10.0f);
-		K1.SetParameter("Bezier-Y", 10.0f);
+		K1.SetParameter("Tilt", 0.0f);
+		K1.SetParameter("Bezier-X", 150.0f);
+		K1.SetParameter("Bezier-Y", 0.0f);
 		Keyframes.add(K1);
 
-		Keyframe K2 = new Keyframe(30);
-		K2.SetParameter("Tilt", 50.0f);
-		K2.SetParameter("Bezier-X", 5.0f);
-		K2.SetParameter("Bezier-Y", 2.0f);
+		Keyframe K2 = new Keyframe(450);
+		K2.SetParameter("Tilt", -30.0f);
+		K2.SetParameter("Bezier-X", 150.0f);
+		K2.SetParameter("Bezier-Y", 0.0f);
 		Keyframes.add(K2);
 
-		Keyframe K3 = new Keyframe(60);
-		K3.SetParameter("Tilt", -3.0f);
-		K3.SetParameter("Bezier-X", 5.0f);
-		K3.SetParameter("Bezier-Y", -3.0f);
+		Keyframe K3 = new Keyframe(900);
+		K3.SetParameter("Tilt", 0.0f);
+		K3.SetParameter("Bezier-X", 150.0f);
+		K3.SetParameter("Bezier-Y", 0.0f);
 		Keyframes.add(K3);
 
-		AddKeyFrame(0, "Pan", 0.0f);
-		AddKeyFrame(0, "Bezier-X", 5.0f);
-		AddKeyFrame(0, "Bezier-Y", 5.0f);
-		AddKeyFrame(10, "Pan", 3.0f);
-		AddKeyFrame(10, "Bezier-X", 5.0f);
-		AddKeyFrame(10, "Bezier-Y", 5.0f);
-		AddKeyFrame(60, "Pan", -1.0f);
-		AddKeyFrame(60, "Bezier-X", 5.0f);
-		AddKeyFrame(60, "Bezier-Y", 4.0f);
+		
+		Keyframe K4 = new Keyframe(0);
+		K4.SetParameter("Pan", 0.0f);
+		K4.SetParameter("Bezier-X", 200.0f);
+		K4.SetParameter("Bezier-Y", 0.0f);
+		Keyframes.add(K4);
+
+		
+		Keyframe K6 = new Keyframe(900);
+		K6.SetParameter("Pan", 60.0f);
+		K6.SetParameter("Bezier-X", 200.0f);
+		K6.SetParameter("Bezier-Y", 0.0f);
+		Keyframes.add(K6);
 
 		this.OrderKeyframes();
 
@@ -302,8 +306,8 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 		 */
 		double temp = 10;
 		double accuracy = 999999;
-		for (int i = 0; i < (10 * delta_time); i++) {
-			point = Bezierutils.pointOnCurve((i / (10 * delta_time)), cubicCurve, null);
+		for (int i = 0; i < (100 * delta_time); i++) {
+			point = pointOnCurve((i / (100 * delta_time)), cubicCurve);
 			if (Math.abs(accuracy) > Math.abs(time - point.getX())) {
 				temp = point.getY();
 				accuracy = Math.abs(time - point.getX());
@@ -742,6 +746,30 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 		GetKeyframe(channel, index).SetParameter(key, value);
 	}
 
+	public Point2D pointOnCurve(double t, CubicCurve2D curve) {
+		Point2D.Double resultHere;
+		if (null != curve) {
+			double x1 = curve.getX1(), y1 = curve.getY1();
+			double cx1 = curve.getCtrlX1(), cy1 = curve.getCtrlY1();
+			double cx2 = curve.getCtrlX2(), cy2 = curve.getCtrlY2();
+			double x2 = curve.getX2(), y2 = curve.getY2();
+			// Coefficients of the parametric representation of the cubic
+			double ax = cx1 - x1, ay = cy1 - y1;
+			double bx = cx2 - cx1 - ax, by = cy2 - cy1 - ay;
+			double cx = x2 - cx2 - ax - bx - bx; // instead of ...-ax-2*bx. Does
+													// it worth?
+			double cy = y2 - cy2 - ay - by - by;
+
+			double x = x1 + (t * ((3 * ax) + (t * ((3 * bx) + (t * cx)))));
+			double y = y1 + (t * ((3 * ay) + (t * ((3 * by) + (t * cy)))));
+
+			resultHere = new Point2D.Double(x, y);
+		} else {
+			resultHere = null;
+		}
+		return resultHere;
+	}
+
 	private int margin = 5;
 	private int MarginTop = 25;
 	private Color KeyframeRectangleColor = new Color(90, 90, 90);
@@ -814,9 +842,10 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 		// this.getHeight() - margin - (getScaleY() * 1000) - 2);
 
 		// Animation Lines
-		g2.setColor(LineColor);
-		g2.setStroke(new BasicStroke(2.0f));
+
 		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel) - 1; i++) {
+			g2.setColor(LineColor);
+			g2.setStroke(new BasicStroke(2.0f));
 			/*
 			 * Linear - deprecated
 			 * 
@@ -845,6 +874,23 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 			CubicCurve2D.Double cubicCurve = new CubicCurve2D.Double(P1.x, P1.y, ctrl1.x, ctrl1.y, ctrl2.x, ctrl2.y, P2.x, P2.y);
 
 			g2.draw(cubicCurve);
+
+			// //////////////////////////////////////////////////////
+			// For testing:
+			/*Point2D point;
+			Point2D.Double P1_ = new Point2D.Double(this.GetKeyframe(this.ActiveChannel, i).GetTime(), this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel));
+			Point2D.Double P2_ = new Point2D.Double(this.GetKeyframe(this.ActiveChannel, i + 1).GetTime(), this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter(this.ActiveChannel));
+
+			Point2D.Double ctrl1_ = new Point2D.Double(P1_.x + this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-X"), P1_.y + (this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-Y")));
+			Point2D.Double ctrl2_ = new Point2D.Double(P2_.x - this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter("Bezier-X"), P2_.y - (this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter("Bezier-Y")));
+
+			CubicCurve2D.Double cubiccurve = new CubicCurve2D.Double(P1_.x, P1_.y, ctrl1_.x, ctrl1_.y, ctrl2_.x, ctrl2_.y, P2_.x, P2_.y);
+
+			g2.setColor(HightlightedKeyframeRectangleColor);
+			for (int j = 0; j < 100; j++) {
+				point = pointOnCurve((j / 100.0f), (CubicCurve2D) cubiccurve);
+				g2.fillOval((int) (-this.getOffsetX() + margin + (point.getX() * getScaleX())), (int) (this.getOffsetY() + (this.getHeight() - margin - (point.getY() * getScaleY()))), 4, 4);
+			}*/
 		}
 
 		// Keyframe Dots
@@ -924,7 +970,7 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 
 		// Shutter Release Circles
 		g2.setColor(ShutterReleaseCircleColor);
-		for (int i = 1; i < 20; i++) { // TODO 20 is just a placeholder for now
+		for (int i = 1; i < 50; i++) { // TODO 50 is just a placeholder for now
 			int X = -(int) this.getOffsetX() + (int) (margin + (i * this.getTimelapseShutterPeriod() * getScaleX()) - ShutterCircleDimension / 2);
 			int Y = (int) (MarginTop + 5);
 			g2.fillOval(X, Y, ShutterCircleDimension, ShutterCircleDimension);
