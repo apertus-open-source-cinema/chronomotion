@@ -56,7 +56,6 @@ import javax.swing.KeyStroke;
 
 import javax.swing.JButton;
 
-import com.caffeineowl.graphics.bezier.*;
 
 enum STATE {
 
@@ -303,7 +302,6 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 		CubicCurve2D.Double cubicCurve = new CubicCurve2D.Double(P1.x, P1.y, ctrl1.x, ctrl1.y, ctrl2.x, ctrl2.y, P2.x, P2.y);
 		// cubicCurve.g
 		// cubicCurve.
-		BezierUtils Bezierutils = new BezierUtils();
 		Point2D point;
 
 		/*
