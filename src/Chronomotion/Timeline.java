@@ -28,9 +28,11 @@ package Chronomotion;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -45,8 +47,15 @@ import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.Action;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+
+import javax.swing.JButton;
+
 import com.caffeineowl.graphics.bezier.*;
 
 enum STATE {
@@ -92,44 +101,45 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 		Worker = new Thread(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
-		addKeyListener(this);
-		setFocusable(true);
+
 		ActiveChannel = "Tilt";
 
 		// For Testing
 		Keyframe K1 = new Keyframe(0);
 		K1.SetParameter("Tilt", 0.0f);
-		K1.SetParameter("Bezier-X", 150.0f);
+		K1.SetParameter("Bezier-X", 500.0f);
 		K1.SetParameter("Bezier-Y", 0.0f);
 		Keyframes.add(K1);
 
-		Keyframe K2 = new Keyframe(450);
+		Keyframe K2 = new Keyframe(1500);
 		K2.SetParameter("Tilt", -30.0f);
-		K2.SetParameter("Bezier-X", 150.0f);
+		K2.SetParameter("Bezier-X", 500.0f);
 		K2.SetParameter("Bezier-Y", 0.0f);
 		Keyframes.add(K2);
 
-		Keyframe K3 = new Keyframe(900);
+		Keyframe K3 = new Keyframe(3000);
 		K3.SetParameter("Tilt", 0.0f);
-		K3.SetParameter("Bezier-X", 150.0f);
+		K3.SetParameter("Bezier-X", 500.0f);
 		K3.SetParameter("Bezier-Y", 0.0f);
 		Keyframes.add(K3);
 
-		
 		Keyframe K4 = new Keyframe(0);
 		K4.SetParameter("Pan", 0.0f);
-		K4.SetParameter("Bezier-X", 200.0f);
+		K4.SetParameter("Bezier-X", 500.0f);
 		K4.SetParameter("Bezier-Y", 0.0f);
 		Keyframes.add(K4);
 
-		
-		Keyframe K6 = new Keyframe(900);
+		Keyframe K6 = new Keyframe(3000);
 		K6.SetParameter("Pan", 60.0f);
-		K6.SetParameter("Bezier-X", 200.0f);
+		K6.SetParameter("Bezier-X", 500.0f);
 		K6.SetParameter("Bezier-Y", 0.0f);
 		Keyframes.add(K6);
 
 		this.OrderKeyframes();
+
+		// To allow keyboard interaction
+		setFocusable(true);
+		addKeyListener(this);
 
 		// Show evaluation values when clicking into the timeline
 		addMouseListener(new java.awt.event.MouseAdapter() {
@@ -770,11 +780,27 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 		return resultHere;
 	}
 
+	Point2D.Double Transform2Screen(Point2D Input) {
+		double x = -this.getOffsetX() + (margin + Input.getX() * getScaleX());
+		double y = this.getOffsetY() + (this.getHeight() - margin - (Input.getY() * getScaleY()));
+		Point2D.Double temp = new Point2D.Double(x, y);
+		return temp;
+	}
+
+	Point2D.Float Transform2Screen(float X, float Y) {
+		float x = -this.getOffsetX() + (margin + X * getScaleX());
+		float y = this.getOffsetY() + (this.getHeight() - margin - (Y * getScaleY()));
+		Point2D.Float temp = new Point2D.Float(x, y);
+		return temp;
+	}
+
 	private int margin = 5;
 	private int MarginTop = 25;
 	private Color KeyframeRectangleColor = new Color(90, 90, 90);
 	private Color GOTOIndicatorColor = new Color(100, 255, 120);
 	private Color TimeBarColor = new Color(190, 190, 190);
+	private Color BackgroundGradientStartColor = new Color(190, 190, 190);
+	private Color BackgroundGradientEndColor = new Color(240, 240, 240);
 	private Color ShutterReleaseCircleColor = new Color(158, 193, 216);
 	private Color HightlightedKeyframeRectangleColor = new Color(47, 61, 129);
 	private Color AxisColor = new Color(110, 110, 110);
@@ -795,17 +821,36 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 		super.paint(g);
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		// Time Area
+
+		// 180 to -180° area Background Gradient
+		// Positive Area
+		GradientPaint gradient = new GradientPaint(Transform2Screen(0, 0).x, Transform2Screen(0, 0).y, BackgroundGradientEndColor, Transform2Screen(0, 0).x, Transform2Screen(0, 180).y, BackgroundGradientStartColor, true);
+		g2.setPaint(gradient);
+		g2.fillRect((int) Transform2Screen(0, 0).x, (int) Transform2Screen(0, 180).y, this.getWidth(), (int) (180 * getScaleY()));
+		g2.setPaint(BackgroundGradientStartColor);
+		g2.draw(new Line2D.Double(Transform2Screen(0, 180).x, Transform2Screen(0, 180).y, Transform2Screen(0, 180).x + this.getWidth(), Transform2Screen(0, 180).y));
+		// Negative Area
+		GradientPaint gradient2 = new GradientPaint(Transform2Screen(0, 0).x, Transform2Screen(0, 0).y, BackgroundGradientEndColor, Transform2Screen(0, 0).x, Transform2Screen(0, -180).y, BackgroundGradientStartColor, true);
+		g2.setPaint(gradient2);
+		g2.fillRect((int) Transform2Screen(0, 0).x, (int) Transform2Screen(0, 0).y, this.getWidth(), (int) (180 * getScaleY()));
+		g2.setPaint(BackgroundGradientStartColor);
+		g2.draw(new Line2D.Double(Transform2Screen(0, -180).x, Transform2Screen(0, -180).y, Transform2Screen(0, -180).x + this.getWidth(), Transform2Screen(0, -180).y));
+
+		// "180°" Labels
+		g2.drawString("180°", (int) Transform2Screen(0, 180).x + 2, (int) Transform2Screen(0, 180).y - 2);
+		g2.setPaint(BackgroundGradientEndColor);
+		g2.drawString("-180°", (int) Transform2Screen(0, -180).x + 2, (int) Transform2Screen(0, -180).y - 2);
+
+		// Time Bar
 		g2.setColor(TimeBarColor);
 		g2.fillRect(0, 0, this.getWidth(), 30);
 		g2.setColor(AxisColor);
-		// Horizontal Line
 		g2.draw(new Line2D.Double(margin, MarginTop, this.getWidth() - margin, MarginTop));
 		g2.drawString("Time", margin + 2, 12);
 
 		// X Axis Indicators
 		// Lets define the standard scale 1:1 with 10 seconds = 50 pixels width
-		// 1 second = 5 pixels
+		// 1 second = 5 pixels - TODO: verify
 
 		// There should not be more than one indicator each 50 pixels to prevent
 		// making them so dense that you can't read them
@@ -828,8 +873,6 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 
 		// Axis
 		g2.setColor(AxisColor);
-
-		// Axis
 		g2.draw(new Line2D.Double(-(int) this.getOffsetX() + margin, (int) this.getOffsetY() + this.getHeight() - margin, this.getWidth(), (int) this.getOffsetY() + this.getHeight() - margin));
 
 		// "0" Label
@@ -838,33 +881,12 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 		// Small indicator for "0"
 		g2.draw(new Line2D.Double(-(int) this.getOffsetX() + margin, (int) this.getOffsetY() + this.getHeight() - margin - (getScaleY() * 1000), -(int) this.getOffsetX() + this.getWidth(), (int) this.getOffsetY() + this.getHeight() - margin - (getScaleY() * 1000)));
 
-		// g2.drawString("1000", margin, (int) this.getOffsetY() +
-		// this.getHeight() - margin - (getScaleY() * 1000) - 2);
-
 		// Animation Lines
-
 		for (int i = 0; i < this.GetNumberOfKeyframes(this.ActiveChannel) - 1; i++) {
 			g2.setColor(LineColor);
 			g2.setStroke(new BasicStroke(2.0f));
-			/*
-			 * Linear - deprecated
-			 * 
-			 * int X1 = -(int) this.getOffsetX() + (int) (margin +
-			 * this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX());
-			 * int Y1 = (int) this.getOffsetY() + (int) (this.getHeight() -
-			 * margin - (this.GetKeyframe(this.ActiveChannel,
-			 * i).GetParameter(this.ActiveChannel) * getScaleY())); int X2 =
-			 * -(int) this.getOffsetX() + (int) (margin +
-			 * this.GetKeyframe(this.ActiveChannel, i + 1).GetTime() *
-			 * getScaleX()); int Y2 = (int) this.getOffsetY() + (int)
-			 * (this.getHeight() - margin -
-			 * (this.GetKeyframe(this.ActiveChannel, i +
-			 * 1).GetParameter(this.ActiveChannel) * getScaleY())); g2.draw(new
-			 * Line2D.Double(X1, Y1, X2, Y2));
-			 */
 
 			// Bezier
-
 			Point2D.Double P1 = new Point2D.Double(-(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i).GetTime() * getScaleX()), (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel) * getScaleY())));
 			Point2D.Double P2 = new Point2D.Double(-(int) this.getOffsetX() + (int) (margin + this.GetKeyframe(this.ActiveChannel, i + 1).GetTime() * getScaleX()), (int) this.getOffsetY() + (int) (this.getHeight() - margin - (this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter(this.ActiveChannel) * getScaleY())));
 
@@ -874,23 +896,6 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 			CubicCurve2D.Double cubicCurve = new CubicCurve2D.Double(P1.x, P1.y, ctrl1.x, ctrl1.y, ctrl2.x, ctrl2.y, P2.x, P2.y);
 
 			g2.draw(cubicCurve);
-
-			// //////////////////////////////////////////////////////
-			// For testing:
-			/*Point2D point;
-			Point2D.Double P1_ = new Point2D.Double(this.GetKeyframe(this.ActiveChannel, i).GetTime(), this.GetKeyframe(this.ActiveChannel, i).GetParameter(this.ActiveChannel));
-			Point2D.Double P2_ = new Point2D.Double(this.GetKeyframe(this.ActiveChannel, i + 1).GetTime(), this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter(this.ActiveChannel));
-
-			Point2D.Double ctrl1_ = new Point2D.Double(P1_.x + this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-X"), P1_.y + (this.GetKeyframe(this.ActiveChannel, i).GetParameter("Bezier-Y")));
-			Point2D.Double ctrl2_ = new Point2D.Double(P2_.x - this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter("Bezier-X"), P2_.y - (this.GetKeyframe(this.ActiveChannel, i + 1).GetParameter("Bezier-Y")));
-
-			CubicCurve2D.Double cubiccurve = new CubicCurve2D.Double(P1_.x, P1_.y, ctrl1_.x, ctrl1_.y, ctrl2_.x, ctrl2_.y, P2_.x, P2_.y);
-
-			g2.setColor(HightlightedKeyframeRectangleColor);
-			for (int j = 0; j < 100; j++) {
-				point = pointOnCurve((j / 100.0f), (CubicCurve2D) cubiccurve);
-				g2.fillOval((int) (-this.getOffsetX() + margin + (point.getX() * getScaleX())), (int) (this.getOffsetY() + (this.getHeight() - margin - (point.getY() * getScaleY()))), 4, 4);
-			}*/
 		}
 
 		// Keyframe Dots
@@ -1088,21 +1093,6 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 
 	}
 
-	@Override
-	public void keyPressed(KeyEvent e) {
-		Parent.WriteLogtoConsole("KEY");
-		keys(e);
-	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {
-		// TODO Auto-generated method stub
-	}
-
-	public void keys(KeyEvent e) {
-
-	}
-
 	/*
 	 * double click to add new keyframes to the timeline
 	 */
@@ -1193,7 +1183,20 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 	}
 
 	@Override
-	public void keyTyped(KeyEvent arg0) {
+	public void keyPressed(KeyEvent e) {
 		// TODO Auto-generated method stub
+		int a = 1;
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		int a = 1;
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		int a = 1;
 	}
 }

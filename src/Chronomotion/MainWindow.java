@@ -67,6 +67,8 @@ import javax.swing.SwingConstants;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import javax.swing.JScrollBar;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 public class MainWindow implements Runnable {
 
@@ -341,7 +343,7 @@ public class MainWindow implements Runnable {
 		lblPosTiltDegrees = new JLabel("...");
 		InfoPanel.add(lblPosTiltDegrees, "cell 5 0");
 
-		lblSpeed = new JLabel("Speed");
+		lblSpeed = new JLabel("Speed [\u00B0/Min]");
 		InfoPanel.add(lblSpeed, "cell 0 1");
 
 		label = new JLabel("Pan");
@@ -359,9 +361,10 @@ public class MainWindow implements Runnable {
 		TimelapseParameterPanel = new JPanel();
 		TimelapseParameterPanel.setBorder(new TitledBorder(null, "Time Lapse Parameters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		frame.getContentPane().add(TimelapseParameterPanel, "cell 2 3,alignx left,aligny top");
-		TimelapseParameterPanel.setLayout(new MigLayout("", "[140px][87.00px]", "[20px][20px]"));
+		TimelapseParameterPanel.setLayout(new MigLayout("", "[140px][87.00px,grow][10px][][grow]", "[20px][20px][]"));
 
 		lblNewLabel_2 = new JLabel("Shutter Period [seconds]");
+		lblNewLabel_2.setHorizontalAlignment(SwingConstants.LEFT);
 		TimelapseParameterPanel.add(lblNewLabel_2, "cell 0 0,grow");
 
 		ShutterPeriod = new JTextField();
@@ -392,8 +395,16 @@ public class MainWindow implements Runnable {
 		ShutterPeriod.setText("15");
 		TimelapseParameterPanel.add(ShutterPeriod, "cell 1 0,grow");
 		ShutterPeriod.setColumns(10);
+		
+		lblProjectSettings = new JLabel("Project Settings");
+		TimelapseParameterPanel.add(lblProjectSettings, "cell 3 0,alignx left");
+		
+		comboBox = new JComboBox();
+		comboBox.setModel(new DefaultComboBoxModel(new String[] {"24 FPS", "25 FPS", "29.97 FPS", "48 FPS", "60 FPS"}));
+		TimelapseParameterPanel.add(comboBox, "cell 4 0,growx");
 
 		lblNewLabel_3 = new JLabel("Post Shutter Delay [seconds]");
+		lblNewLabel_3.setHorizontalAlignment(SwingConstants.LEFT);
 		TimelapseParameterPanel.add(lblNewLabel_3, "cell 0 1,grow");
 
 		PostShutterDelay = new JTextField();
@@ -423,11 +434,26 @@ public class MainWindow implements Runnable {
 		PostShutterDelay.setText("2");
 		TimelapseParameterPanel.add(PostShutterDelay, "cell 1 1,grow");
 		PostShutterDelay.setColumns(10);
+		
+		lblVideoDuration = new JLabel("Video Duration");
+		TimelapseParameterPanel.add(lblVideoDuration, "cell 3 1,alignx left");
+		
+		textField_1 = new JTextField();
+		TimelapseParameterPanel.add(textField_1, "cell 4 1,growx");
+		textField_1.setColumns(10);
+		
+		lblFrames = new JLabel("Frames");
+		lblFrames.setHorizontalAlignment(SwingConstants.LEFT);
+		TimelapseParameterPanel.add(lblFrames, "cell 0 2,grow");
+		
+		textField = new JTextField();
+		TimelapseParameterPanel.add(textField, "cell 1 2,growx");
+		textField.setColumns(10);
 
 		AnimationPanel = new JPanel();
 		AnimationPanel.setBorder(new TitledBorder(null, "Animation", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		frame.getContentPane().add(AnimationPanel, "cell 0 4 3 1,grow");
-		AnimationPanel.setLayout(new MigLayout("", "[][][][][][][][][grow][grow][grow][grow][][][19.00]", "[][][grow][][][]"));
+		AnimationPanel.setLayout(new MigLayout("", "[][][][][][][][][grow][grow][grow][grow][][][][19.00]", "[][][grow][][][]"));
 
 		lblNewLabel_4 = new JLabel("Time:");
 		AnimationPanel.add(lblNewLabel_4, "cell 0 0");
@@ -521,6 +547,16 @@ public class MainWindow implements Runnable {
 		TimelineEditBezierValue.setColumns(10);
 		AnimationPanel.add(TimelineEdit, "cell 12 1,aligny top");
 
+		TimelineDel = new JButton("del");
+		TimelineDel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				TimelineDelPressed(e);
+			}
+		});
+
+		AnimationPanel.add(TimelineDel, "cell 13 1");
+
 		scrollPane = new JScrollPane();
 		AnimationPanel.add(scrollPane, "cell 0 2 2 1,alignx left,growy");
 
@@ -554,7 +590,7 @@ public class MainWindow implements Runnable {
 		scrollPane.setRowHeaderView(ChannelSelector);
 
 		scrollPane_1 = new JScrollPane();
-		AnimationPanel.add(scrollPane_1, "cell 2 2 11 1,grow");
+		AnimationPanel.add(scrollPane_1, "cell 2 2 12 1,grow");
 
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -587,7 +623,7 @@ public class MainWindow implements Runnable {
 
 		SliderOffsetY = new JScrollBar();
 		SliderOffsetY.setValue(50);
-		AnimationPanel.add(SliderOffsetY, "cell 13 2,growy");
+		AnimationPanel.add(SliderOffsetY, "cell 14 2,growy");
 		SliderOffsetY.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderOffsetYUpdate();
@@ -608,7 +644,7 @@ public class MainWindow implements Runnable {
 		SliderScaleY.setValue(30);
 		SliderScaleY.setPaintTicks(true);
 		SliderScaleY.setOrientation(SwingConstants.VERTICAL);
-		AnimationPanel.add(SliderScaleY, "cell 14 2,growy");
+		AnimationPanel.add(SliderScaleY, "cell 15 2,growy");
 		SliderScaleY.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderScaleYUpdate();
@@ -917,6 +953,13 @@ public class MainWindow implements Runnable {
 	private JLabel lblBezierTime;
 	private JTextField TimelineEditBezierTime;
 	private JTextField TimelineEditBezierValue;
+	private JButton TimelineDel;
+	private JComboBox comboBox;
+	private JLabel lblProjectSettings;
+	private JLabel lblVideoDuration;
+	private JLabel lblFrames;
+	private JTextField textField;
+	private JTextField textField_1;
 
 	private void TimelineNextKeyframePressed(java.awt.event.MouseEvent evt) {
 		highlightindex++;
@@ -957,6 +1000,11 @@ public class MainWindow implements Runnable {
 		timeline1.SetTime(timeline1.GetActiveChannel(), highlightindex, Float.parseFloat(TimelineEditTime.getText()));
 		timeline1.SetParameter(timeline1.GetActiveChannel(), highlightindex, "Bezier-Y", Float.parseFloat(TimelineEditBezierValue.getText()));
 		timeline1.SetParameter(timeline1.GetActiveChannel(), highlightindex, "Bezier-X", Float.parseFloat(TimelineEditBezierTime.getText()));
+		timeline1.Redraw();
+	}
+
+	private void TimelineDelPressed(java.awt.event.MouseEvent evt) {
+		timeline1.RemoveKeyframe(highlightindex);
 		timeline1.Redraw();
 	}
 
