@@ -61,7 +61,7 @@ public class ConnectWindow {
 		});
 		frame.getContentPane().add(btnNewButton, BorderLayout.SOUTH);
 
-		JLabel lblConnect = new JLabel("Connect: ");
+		JLabel lblConnect = new JLabel("Port: ");
 		frame.getContentPane().add(lblConnect, BorderLayout.WEST);
 
 		ComPortList = new JList();
@@ -70,6 +70,7 @@ public class ConnectWindow {
 
 	public void Connect() {
 		Parent.GetMerlinController().Init(ComPortList.getSelectedValue().toString());
+		this.Show(false);
 	}
 
 	public void Load() {
