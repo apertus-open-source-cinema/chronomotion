@@ -901,7 +901,9 @@ public class MainWindow implements Runnable {
 	private void GotoStartMousePressed(java.awt.event.MouseEvent evt) {
 		Parent.GetMerlinController().GotoPosition(AXIS.PAN, Float.parseFloat(GOTOPanPos.getText()));
 		Parent.GetMerlinController().GotoPosition(AXIS.TILT, Float.parseFloat(GOTOTiltPos.getText()));
-		//Parent.WriteLogtoConsole("Started GOTO Position: Pan " + Float.parseFloat(GOTOPanPos.getText()) + " ° | Tilt: " + GOTOTiltPos.getText() + " °");
+		// Parent.WriteLogtoConsole("Started GOTO Position: Pan " +
+		// Float.parseFloat(GOTOPanPos.getText()) + " ° | Tilt: " +
+		// GOTOTiltPos.getText() + " °");
 	}
 
 	private void GotoStopMousePressed(java.awt.event.MouseEvent evt) {
@@ -952,6 +954,10 @@ public class MainWindow implements Runnable {
 	private JButton TimelineAdd;
 	private JButton GotoLoadFromCti;
 
+	/*
+	 * highlight the next keyframe in the current active channel move CTI to
+	 * newly highlighted keyframe
+	 */
 	private void TimelineNextKeyframePressed(java.awt.event.MouseEvent evt) {
 		highlightindex++;
 
@@ -962,6 +968,29 @@ public class MainWindow implements Runnable {
 			highlightindex = timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1;
 		}
 		TimelineHighlightKeyframeChange(highlightindex);
+
+		float temptime = timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetTime();
+
+		timeline1.setEvaluateTime(temptime);
+	}
+
+	/*
+	 * highlight the previous keyframe in the current active channel move CTI to
+	 * newly highlighted keyframe
+	 */
+	private void TimelinePrevKeyframePressed(java.awt.event.MouseEvent evt) {
+		--highlightindex;
+		if (highlightindex < 0) {
+			highlightindex = 0;
+		}
+		if (highlightindex > timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1) {
+			highlightindex = timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1;
+		}
+		TimelineHighlightKeyframeChange(highlightindex);
+
+		float temptime = timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetTime();
+
+		timeline1.setEvaluateTime(temptime);
 	}
 
 	public void TimelineHighlightKeyframeChange(int newindex) {
@@ -983,17 +1012,6 @@ public class MainWindow implements Runnable {
 		TimelineEditTime.setText(timeline1.GetTime(timeline1.GetActiveChannel(), highlightindex) + "");
 		TimelineEditBezierValue.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter("Bezier-Y") + "");
 		TimelineEditBezierTime.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter("Bezier-X") + "");
-	}
-
-	private void TimelinePrevKeyframePressed(java.awt.event.MouseEvent evt) {
-		--highlightindex;
-		if (highlightindex < 0) {
-			highlightindex = 0;
-		}
-		if (highlightindex > timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1) {
-			highlightindex = timeline1.GetNumberOfKeyframes(timeline1.GetActiveChannel()) - 1;
-		}
-		TimelineHighlightKeyframeChange(highlightindex);
 	}
 
 	private void TimelineEditPressed(java.awt.event.MouseEvent evt) {
