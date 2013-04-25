@@ -44,6 +44,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,7 +56,6 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 import javax.swing.JButton;
-
 
 enum STATE {
 
@@ -190,12 +190,14 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 	/*
 	 * Add one keyframe with one key(string)/value(float) pair
 	 */
-	public void AddKeyFrame(float Time, String key, float value) {
+	public UUID AddKeyFrame(float Time, String key, float value) {
 		Keyframe Frame = new Keyframe(Time);
 		Frame.SetParameter(key, value);
 		Keyframes.add(Frame);
 
 		OrderKeyframes();
+
+		return Frame.GetUUID();
 	}
 
 	/*
@@ -651,9 +653,21 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 	}
 
 	/*
+	 * remove highlighting of all keyframes
+	 */
+	public void UnSetKeyframeHighlight() {
+		for (int i = 0; i < Keyframes.size(); i++) {
+			Keyframes.get(i).setHightlighted(false);
+		}
+		Redraw();
+	}
+
+	/*
 	 * In the GUI we can highlight a particular frame and display its
 	 * coordinates. Also when editing a keyframe you will always want to edit
 	 * the one you are currently editing thus the highlighted keyframe
+	 * 
+	 * set a keyframe to be highlighted by channel and orderindex
 	 */
 	public void SetKeyframeHighlight(String channel, int selectedindex) {
 		// Clear highlighted state for all keyframes to guarantee only a single
@@ -663,6 +677,26 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 		}
 		// Set Highlighted
 		GetKeyframe(channel, selectedindex).setHightlighted(true);
+
+		// Make sure we actually see the newly highlighted keyframe
+		Redraw();
+	}
+
+	/*
+	 * In the GUI we can highlight a particular frame and display its
+	 * coordinates. Also when editing a keyframe you will always want to edit
+	 * the one you are currently editing thus the highlighted keyframe
+	 * 
+	 * set a keyframe to be highlighted by its UUID
+	 */
+	public void SetKeyframeHighlight(UUID uuid) {
+		// Clear highlighted state for all keyframes to guarantee only a single
+		// keyframe will be highlighted at a time.
+		for (int i = 0; i < Keyframes.size(); i++) {
+			Keyframes.get(i).setHightlighted(false);
+		}
+		// Set Highlighted
+		GetKeyframe(uuid).setHightlighted(true);
 
 		// Make sure we actually see the newly highlighted keyframe
 		Redraw();
@@ -707,6 +741,38 @@ public class Timeline extends JPanel implements Runnable, java.io.Serializable, 
 
 		// return null if the element does not exist
 		return null;
+	}
+
+	/*
+	 * Return a specific keyframe by its UUID
+	 */
+	public Keyframe GetKeyframe(UUID uuid) {
+		// iterate through all keyframes 
+		// return the element with matching UUID
+		for (int i = 0; i < Keyframes.size(); i++) {
+			if (Keyframes.get(i).GetUUID() == uuid) {
+				return Keyframes.get(i);
+			}
+		}
+
+		// return null if the element does not exist
+		return null;
+	}
+	
+	/*
+	 * Return a specific keyframe by its UUID
+	 */
+	public int GetKeyframeIndex(UUID uuid) {
+		// iterate through all keyframes 
+		// return the index of the element with matching UUID
+		for (int i = 0; i < Keyframes.size(); i++) {
+			if (Keyframes.get(i).GetUUID() == uuid) {
+				return i;
+			}
+		}
+
+		// return -1 if the element does not exist
+		return -1;
 	}
 
 	/*

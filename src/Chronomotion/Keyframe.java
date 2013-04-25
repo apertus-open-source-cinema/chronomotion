@@ -28,6 +28,7 @@ package Chronomotion;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class Keyframe {
 
@@ -35,8 +36,10 @@ public class Keyframe {
 	private Map<String, Float> Parameters = new HashMap<String, Float>();
 	private boolean Applied = false;
 	private boolean Hightlighted = false;
+	private UUID uuid;
 
 	Keyframe() {
+		uuid = UUID.randomUUID();
 	}
 
 	/*
@@ -46,10 +49,11 @@ public class Keyframe {
 	 */
 	Keyframe(float time) {
 		Time = time;
+		uuid = UUID.randomUUID();
 	}
 
 	/*
-	 * Change the time of a keyframe
+	 * Change/Set the time of a keyframe
 	 */
 	public void SetTime(float time) {
 		Time = time;
@@ -63,6 +67,13 @@ public class Keyframe {
 	 */
 	public boolean IsApplied() {
 		return Applied;
+	}
+
+	/*
+	 * Get Universally unique identifier (UUID)
+	 */
+	public UUID GetUUID() {
+		return uuid;
 	}
 
 	/*

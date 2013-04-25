@@ -27,6 +27,7 @@
 package Chronomotion;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import gnu.io.CommPortIdentifier;
 
@@ -101,11 +102,11 @@ public class MainWindow implements Runnable {
 
 		JFrame frame = new JFrame();
 		frame.setBounds(10, 106, 956, 728);
-		frame.getContentPane().setLayout(new MigLayout("", "[205px][200.00][grow]", "[97.00][][][41.00px][414.00,grow]"));
+		frame.getContentPane().setLayout(new MigLayout("", "[205px][134.00][grow]", "[42.00][89.00][414.00,grow]"));
 
 		JPanel FastControlPanel = new JPanel();
 		FastControlPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Quick Control", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		frame.getContentPane().add(FastControlPanel, "cell 0 0 1 4,alignx left,aligny top");
+		frame.getContentPane().add(FastControlPanel, "cell 0 0 1 2,alignx left,aligny top");
 		GridBagLayout gbl_FastControlPanel = new GridBagLayout();
 		gbl_FastControlPanel.columnWidths = new int[] { 55, 0, 55, 0 };
 		gbl_FastControlPanel.rowHeights = new int[] { 45, 45, 45, 0, 0 };
@@ -201,7 +202,7 @@ public class MainWindow implements Runnable {
 
 		ManuelMotionPanel = new JPanel();
 		ManuelMotionPanel.setBorder(new TitledBorder(null, "Manual Motion", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		frame.getContentPane().add(ManuelMotionPanel, "flowx,cell 1 0 1 4,alignx left,aligny top");
+		frame.getContentPane().add(ManuelMotionPanel, "flowx,cell 1 0 1 2,alignx left,aligny top");
 		ManuelMotionPanel.setLayout(new GridLayout(0, 1, 0, 0));
 
 		Tilt = new JPanel();
@@ -270,8 +271,8 @@ public class MainWindow implements Runnable {
 
 		GOTOPanel = new JPanel();
 		GOTOPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Go to Position [degrees]", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		frame.getContentPane().add(GOTOPanel, "cell 2 0,alignx left,aligny top");
-		GOTOPanel.setLayout(new MigLayout("", "[18px][86px][57px][55px]", "[23px][23px]"));
+		frame.getContentPane().add(GOTOPanel, "flowx,cell 2 0,alignx left,aligny top");
+		GOTOPanel.setLayout(new MigLayout("", "[18px][44.00px][57px][55px]", "[23px][23px]"));
 
 		lblPan_1 = new JLabel("Pan [\u00B0]");
 		GOTOPanel.add(lblPan_1, "cell 0 0,alignx right,aligny center");
@@ -320,138 +321,103 @@ public class MainWindow implements Runnable {
 			}
 		});
 		GOTOPanel.add(GotoTiltStop, "cell 3 1,alignx center,aligny center");
-
-		InfoPanel = new JPanel();
-		InfoPanel.setBorder(new TitledBorder(null, "Information", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		frame.getContentPane().add(InfoPanel, "cell 2 1,alignx left,aligny top");
-		InfoPanel.setLayout(new MigLayout("", "[60.00][38.00][28.00][][][45.00]", "[][]"));
-
-		lblPosition = new JLabel("Position");
-		InfoPanel.add(lblPosition, "cell 0 0");
-
-		lblPan = new JLabel("Pan");
-		InfoPanel.add(lblPan, "cell 1 0");
-
-		lblPosPanDegrees = new JLabel("...");
-		InfoPanel.add(lblPosPanDegrees, "cell 2 0");
-
-		lblTilt = new JLabel("Tilt");
-		InfoPanel.add(lblTilt, "cell 4 0");
-
-		lblPosTiltDegrees = new JLabel("...");
-		InfoPanel.add(lblPosTiltDegrees, "cell 5 0");
-
-		lblSpeed = new JLabel("Speed [\u00B0/Min]");
-		InfoPanel.add(lblSpeed, "cell 0 1");
-
-		label = new JLabel("Pan");
-		InfoPanel.add(label, "cell 1 1");
-
-		lblSpeedPanDegrees = new JLabel("...");
-		InfoPanel.add(lblSpeedPanDegrees, "cell 2 1");
-
-		label_1 = new JLabel("Tilt");
-		InfoPanel.add(label_1, "cell 4 1");
-
-		lblSpeedTiltDegrees = new JLabel("...");
-		InfoPanel.add(lblSpeedTiltDegrees, "cell 5 1");
-
-		TimelapseParameterPanel = new JPanel();
-		TimelapseParameterPanel.setBorder(new TitledBorder(null, "Time Lapse Parameters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		frame.getContentPane().add(TimelapseParameterPanel, "cell 2 3,alignx left,aligny top");
-		TimelapseParameterPanel.setLayout(new MigLayout("", "[140px][87.00px,grow][10px][][grow]", "[20px][20px][]"));
-
-		lblNewLabel_2 = new JLabel("Shutter Period [seconds]");
-		lblNewLabel_2.setHorizontalAlignment(SwingConstants.LEFT);
-		TimelapseParameterPanel.add(lblNewLabel_2, "cell 0 0,grow");
-
-		ShutterPeriod = new JTextField();
-		ShutterPeriod.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				ShutterPeriodUpdate();
-			}
-		});
-		ShutterPeriod.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				ShutterPeriodUpdate();
-			}
-		});
-		ShutterPeriod.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
-				ShutterPeriodUpdate();
-			}
-
-			public void removeUpdate(DocumentEvent e) {
-				ShutterPeriodUpdate();
-			}
-
-			public void insertUpdate(DocumentEvent e) {
-				ShutterPeriodUpdate();
-			}
-		});
-
-		ShutterPeriod.setText("15");
-		TimelapseParameterPanel.add(ShutterPeriod, "cell 1 0,grow");
-		ShutterPeriod.setColumns(10);
 		
-		lblProjectSettings = new JLabel("Project Settings");
-		TimelapseParameterPanel.add(lblProjectSettings, "cell 3 0,alignx left");
-		
-		comboBox = new JComboBox();
-		comboBox.setModel(new DefaultComboBoxModel(new String[] {"24 FPS", "25 FPS", "29.97 FPS", "48 FPS", "60 FPS"}));
-		TimelapseParameterPanel.add(comboBox, "cell 4 0,growx");
+				TimelapseParameterPanel = new JPanel();
+				TimelapseParameterPanel.setBorder(new TitledBorder(null, "Time Lapse Parameters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+				frame.getContentPane().add(TimelapseParameterPanel, "cell 2 1,alignx left,aligny top");
+				TimelapseParameterPanel.setLayout(new MigLayout("", "[140px][54.00px,grow][10px][][57.00,grow]", "[20px][20px][]"));
+				
+						lblNewLabel_2 = new JLabel("Shutter Period [seconds]");
+						lblNewLabel_2.setHorizontalAlignment(SwingConstants.LEFT);
+						TimelapseParameterPanel.add(lblNewLabel_2, "cell 0 0,grow");
+						
+								ShutterPeriod = new JTextField();
+								ShutterPeriod.addPropertyChangeListener(new PropertyChangeListener() {
+									public void propertyChange(PropertyChangeEvent evt) {
+										ShutterPeriodUpdate();
+									}
+								});
+								ShutterPeriod.addActionListener(new ActionListener() {
+									public void actionPerformed(ActionEvent e) {
+										ShutterPeriodUpdate();
+									}
+								});
+								ShutterPeriod.getDocument().addDocumentListener(new DocumentListener() {
+									public void changedUpdate(DocumentEvent e) {
+										ShutterPeriodUpdate();
+									}
 
-		lblNewLabel_3 = new JLabel("Post Shutter Delay [seconds]");
-		lblNewLabel_3.setHorizontalAlignment(SwingConstants.LEFT);
-		TimelapseParameterPanel.add(lblNewLabel_3, "cell 0 1,grow");
+									public void removeUpdate(DocumentEvent e) {
+										ShutterPeriodUpdate();
+									}
 
-		PostShutterDelay = new JTextField();
-		PostShutterDelay.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				PostShutterDelayUpdate();
-			}
-		});
-		PostShutterDelay.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent arg0) {
-				PostShutterDelayUpdate();
-			}
-		});
-		PostShutterDelay.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
-				PostShutterDelayUpdate();
-			}
+									public void insertUpdate(DocumentEvent e) {
+										ShutterPeriodUpdate();
+									}
+								});
+								
+										ShutterPeriod.setText("15");
+										TimelapseParameterPanel.add(ShutterPeriod, "cell 1 0,grow");
+										ShutterPeriod.setColumns(10);
+										
+										lblProjectSettings = new JLabel("Project Settings");
+										TimelapseParameterPanel.add(lblProjectSettings, "cell 3 0,alignx left");
+										
+										comboBox = new JComboBox();
+										comboBox.setModel(new DefaultComboBoxModel(new String[] {"24 FPS", "25 FPS", "29.97 FPS", "48 FPS", "60 FPS"}));
+										TimelapseParameterPanel.add(comboBox, "cell 4 0,growx");
+										
+												lblNewLabel_3 = new JLabel("Post Shutter Delay [seconds]");
+												lblNewLabel_3.setHorizontalAlignment(SwingConstants.LEFT);
+												TimelapseParameterPanel.add(lblNewLabel_3, "cell 0 1,grow");
+												
+														PostShutterDelay = new JTextField();
+														PostShutterDelay.addActionListener(new ActionListener() {
+															public void actionPerformed(ActionEvent arg0) {
+																PostShutterDelayUpdate();
+															}
+														});
+														PostShutterDelay.addPropertyChangeListener(new PropertyChangeListener() {
+															public void propertyChange(PropertyChangeEvent arg0) {
+																PostShutterDelayUpdate();
+															}
+														});
+														PostShutterDelay.getDocument().addDocumentListener(new DocumentListener() {
+															public void changedUpdate(DocumentEvent e) {
+																PostShutterDelayUpdate();
+															}
 
-			public void removeUpdate(DocumentEvent e) {
-				PostShutterDelayUpdate();
-			}
+															public void removeUpdate(DocumentEvent e) {
+																PostShutterDelayUpdate();
+															}
 
-			public void insertUpdate(DocumentEvent e) {
-				PostShutterDelayUpdate();
-			}
-		});
-		PostShutterDelay.setText("2");
-		TimelapseParameterPanel.add(PostShutterDelay, "cell 1 1,grow");
-		PostShutterDelay.setColumns(10);
-		
-		lblVideoDuration = new JLabel("Video Duration");
-		TimelapseParameterPanel.add(lblVideoDuration, "cell 3 1,alignx left");
-		
-		textField_1 = new JTextField();
-		TimelapseParameterPanel.add(textField_1, "cell 4 1,growx");
-		textField_1.setColumns(10);
-		
-		lblFrames = new JLabel("Frames");
-		lblFrames.setHorizontalAlignment(SwingConstants.LEFT);
-		TimelapseParameterPanel.add(lblFrames, "cell 0 2,grow");
-		
-		textField = new JTextField();
-		TimelapseParameterPanel.add(textField, "cell 1 2,growx");
-		textField.setColumns(10);
+															public void insertUpdate(DocumentEvent e) {
+																PostShutterDelayUpdate();
+															}
+														});
+														PostShutterDelay.setText("2");
+														TimelapseParameterPanel.add(PostShutterDelay, "cell 1 1,grow");
+														PostShutterDelay.setColumns(10);
+														
+														lblVideoDuration = new JLabel("Video Duration");
+														TimelapseParameterPanel.add(lblVideoDuration, "cell 3 1,alignx left");
+														
+														textField_1 = new JTextField();
+														TimelapseParameterPanel.add(textField_1, "cell 4 1,growx");
+														textField_1.setColumns(10);
+														
+														lblFrames = new JLabel("Frames");
+														lblFrames.setHorizontalAlignment(SwingConstants.LEFT);
+														TimelapseParameterPanel.add(lblFrames, "cell 0 2,grow");
+														
+														textField = new JTextField();
+														TimelapseParameterPanel.add(textField, "cell 1 2,growx");
+														textField.setColumns(10);
 
 		AnimationPanel = new JPanel();
 		AnimationPanel.setBorder(new TitledBorder(null, "Animation", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		frame.getContentPane().add(AnimationPanel, "cell 0 4 3 1,grow");
-		AnimationPanel.setLayout(new MigLayout("", "[][][][][][][][][grow][grow][grow][grow][][][][19.00]", "[][][grow][][][]"));
+		frame.getContentPane().add(AnimationPanel, "cell 0 2 3 1,grow");
+		AnimationPanel.setLayout(new MigLayout("", "[][][][][][][][][grow][grow][grow][grow][][][][][19.00]", "[][][grow][][]"));
 
 		lblNewLabel_4 = new JLabel("Time:");
 		AnimationPanel.add(lblNewLabel_4, "cell 0 0");
@@ -552,8 +518,17 @@ public class MainWindow implements Runnable {
 				TimelineDelPressed(e);
 			}
 		});
+		
+		TimelineAdd = new JButton("add");
+		TimelineAdd.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				TimelineAddPressed(e);
+			}
+		});
+		AnimationPanel.add(TimelineAdd, "cell 13 1");
 
-		AnimationPanel.add(TimelineDel, "cell 13 1");
+		AnimationPanel.add(TimelineDel, "cell 14 1");
 
 		scrollPane = new JScrollPane();
 		AnimationPanel.add(scrollPane, "cell 0 2 2 1,alignx left,growy");
@@ -588,7 +563,7 @@ public class MainWindow implements Runnable {
 		scrollPane.setRowHeaderView(ChannelSelector);
 
 		scrollPane_1 = new JScrollPane();
-		AnimationPanel.add(scrollPane_1, "cell 2 2 12 1,grow");
+		AnimationPanel.add(scrollPane_1, "cell 2 2 13 1,grow");
 
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -621,7 +596,7 @@ public class MainWindow implements Runnable {
 
 		SliderOffsetY = new JScrollBar();
 		SliderOffsetY.setValue(50);
-		AnimationPanel.add(SliderOffsetY, "cell 14 2,growy");
+		AnimationPanel.add(SliderOffsetY, "cell 15 2,growy");
 		SliderOffsetY.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderOffsetYUpdate();
@@ -642,7 +617,7 @@ public class MainWindow implements Runnable {
 		SliderScaleY.setValue(30);
 		SliderScaleY.setPaintTicks(true);
 		SliderScaleY.setOrientation(SwingConstants.VERTICAL);
-		AnimationPanel.add(SliderScaleY, "cell 15 2,growy");
+		AnimationPanel.add(SliderScaleY, "cell 16 2,growy");
 		SliderScaleY.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderScaleYUpdate();
@@ -661,7 +636,7 @@ public class MainWindow implements Runnable {
 
 		SliderOffsetX = new JScrollBar();
 		SliderOffsetX.setOrientation(JScrollBar.HORIZONTAL);
-		AnimationPanel.add(SliderOffsetX, "cell 2 3 11 1,growx");
+		AnimationPanel.add(SliderOffsetX, "cell 2 3 13 1,growx");
 		SliderOffsetX.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderOffsetXUpdate();
@@ -681,7 +656,42 @@ public class MainWindow implements Runnable {
 		SliderScaleX = new JSlider();
 		SliderScaleX.setMaximum(300);
 		SliderScaleX.setPaintTicks(true);
-		AnimationPanel.add(SliderScaleX, "cell 2 4 11 1,growx");
+		AnimationPanel.add(SliderScaleX, "cell 2 4 13 1,growx");
+		
+				InfoPanel = new JPanel();
+				InfoPanel.setBorder(new TitledBorder(null, "Information", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+				frame.getContentPane().add(InfoPanel, "cell 2 0,alignx left,aligny top");
+				InfoPanel.setLayout(new MigLayout("", "[60.00][38.00][28.00][][][45.00]", "[][]"));
+				
+						lblPosition = new JLabel("Position");
+						InfoPanel.add(lblPosition, "cell 0 0");
+						
+								lblPan = new JLabel("Pan");
+								InfoPanel.add(lblPan, "cell 1 0");
+								
+										lblPosPanDegrees = new JLabel("...");
+										InfoPanel.add(lblPosPanDegrees, "cell 2 0");
+										
+												lblTilt = new JLabel("Tilt");
+												InfoPanel.add(lblTilt, "cell 4 0");
+												
+														lblPosTiltDegrees = new JLabel("...");
+														InfoPanel.add(lblPosTiltDegrees, "cell 5 0");
+														
+																lblSpeed = new JLabel("Speed [\u00B0/Min]");
+																InfoPanel.add(lblSpeed, "cell 0 1");
+																
+																		label = new JLabel("Pan");
+																		InfoPanel.add(label, "cell 1 1");
+																		
+																				lblSpeedPanDegrees = new JLabel("...");
+																				InfoPanel.add(lblSpeedPanDegrees, "cell 2 1");
+																				
+																						label_1 = new JLabel("Tilt");
+																						InfoPanel.add(label_1, "cell 4 1");
+																						
+																								lblSpeedTiltDegrees = new JLabel("...");
+																								InfoPanel.add(lblSpeedTiltDegrees, "cell 5 1");
 		SliderScaleX.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderScaleXUpdate();
@@ -950,6 +960,7 @@ public class MainWindow implements Runnable {
 	private JLabel lblFrames;
 	private JTextField textField;
 	private JTextField textField_1;
+	private JButton TimelineAdd;
 
 	private void TimelineNextKeyframePressed(java.awt.event.MouseEvent evt) {
 		highlightindex++;
@@ -965,9 +976,19 @@ public class MainWindow implements Runnable {
 
 	public void TimelineHighlightKeyframeChange(int newindex) {
 		highlightindex = newindex;
-
 		timeline1.SetKeyframeHighlight(timeline1.GetActiveChannel(), highlightindex);
-
+		TimelineHighlightKeyframeChangeUpdate();
+		timeline1.Redraw();
+	}
+	
+	public void TimelineHighlightKeyframeChange(UUID uuid) {
+		timeline1.SetKeyframeHighlight(uuid);
+		highlightindex = timeline1.GetKeyframeIndex(uuid)-1;
+		TimelineHighlightKeyframeChangeUpdate();
+		timeline1.Redraw();
+	}
+	
+	public void TimelineHighlightKeyframeChangeUpdate() {
 		TimelineEditValue.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter(timeline1.GetActiveChannel()) + "");
 		TimelineEditTime.setText(timeline1.GetTime(timeline1.GetActiveChannel(), highlightindex) + "");
 		TimelineEditBezierValue.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter("Bezier-Y") + "");
@@ -993,6 +1014,20 @@ public class MainWindow implements Runnable {
 		timeline1.Redraw();
 	}
 
+	/*
+	 * Add a new keyframe to the current active channel at the current time indicator (CTI) with the value the curve has at that point.
+	 */
+	private void TimelineAddPressed(java.awt.event.MouseEvent evt) {
+		UUID mykeyframe = timeline1.AddKeyFrame(timeline1.getEvaluateTime(), timeline1.GetActiveChannel(), timeline1.GetTargetValue(timeline1.getEvaluateTime(), timeline1.GetActiveChannel()));
+			
+		TimelineHighlightKeyframeChange(mykeyframe);
+		
+		timeline1.Redraw();
+	}
+	
+	/*
+	 * Delete the currently active (hightlighted) keyframe
+	 */
 	private void TimelineDelPressed(java.awt.event.MouseEvent evt) {
 		timeline1.RemoveKeyframe(highlightindex);
 		timeline1.Redraw();
