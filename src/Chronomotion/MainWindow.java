@@ -269,12 +269,12 @@ public class MainWindow implements Runnable {
 		panel_1.add(ManualMotionStop);
 
 		GOTOPanel = new JPanel();
-		GOTOPanel.setBorder(new TitledBorder(null, "Goto", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		GOTOPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Go to Position [degrees]", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		frame.getContentPane().add(GOTOPanel, "cell 2 0,alignx left,aligny top");
 		GOTOPanel.setLayout(new MigLayout("", "[18px][86px][57px][55px]", "[23px][23px]"));
 
-		lblPan_1 = new JLabel("Pan");
-		GOTOPanel.add(lblPan_1, "cell 0 0,alignx center,aligny center");
+		lblPan_1 = new JLabel("Pan [\u00B0]");
+		GOTOPanel.add(lblPan_1, "cell 0 0,alignx right,aligny center");
 
 		GOTOPanPos = new JTextField();
 		GOTOPanel.add(GOTOPanPos, "cell 1 0,alignx center,aligny center");
@@ -296,10 +296,9 @@ public class MainWindow implements Runnable {
 			}
 		});
 		GOTOPanel.add(GotoPanStop, "cell 3 0,alignx center,aligny center");
-		GotoPanStop.setEnabled(false);
 
-		lblTilt_1 = new JLabel("Tilt");
-		GOTOPanel.add(lblTilt_1, "cell 0 1,alignx center,aligny center");
+		lblTilt_1 = new JLabel("Tilt [\u00B0]");
+		GOTOPanel.add(lblTilt_1, "cell 0 1,alignx right,aligny center");
 
 		GOTOTiltPos = new JTextField();
 		GOTOPanel.add(GOTOTiltPos, "cell 1 1,alignx center,aligny center");
@@ -320,7 +319,6 @@ public class MainWindow implements Runnable {
 				GotoTiltStopMousePressed(e);
 			}
 		});
-		GotoTiltStop.setEnabled(false);
 		GOTOPanel.add(GotoTiltStop, "cell 3 1,alignx center,aligny center");
 
 		InfoPanel = new JPanel();
@@ -901,29 +899,21 @@ public class MainWindow implements Runnable {
 
 	private void GotoPanStartMousePressed(java.awt.event.MouseEvent evt) {
 		Parent.GetMerlinController().GotoPosition(AXIS.PAN, Float.parseFloat(GOTOPanPos.getText()));
-		GotoPanStop.setEnabled(true);
-		GotoPanStart.setEnabled(false);
 		Parent.WriteLogtoConsole("Started Pan GOTO Position: " + Float.parseFloat(GOTOPanPos.getText()));
 	}
 
 	private void GotoTiltStartMousePressed(java.awt.event.MouseEvent evt) {
 		Parent.GetMerlinController().GotoPosition(AXIS.TILT, Float.parseFloat(GOTOTiltPos.getText()));
-		GotoTiltStop.setEnabled(true);
-		GotoTiltStart.setEnabled(false);
 		Parent.WriteLogtoConsole("Started Tilt GOTO Position: " + Float.parseFloat(GOTOPanPos.getText()));
 	}
 
 	private void GotoPanStopMousePressed(java.awt.event.MouseEvent evt) {
 		Parent.GetMerlinController().GotoPosition(AXIS.PAN, Float.parseFloat(GOTOPanPos.getText()));
-		GotoPanStart.setEnabled(true);
-		GotoPanStop.setEnabled(false);
 		Parent.WriteLogtoConsole("Stopped Pan GOTO");
 	}
 
 	private void GotoTiltStopMousePressed(java.awt.event.MouseEvent evt) {
 		Parent.GetMerlinController().GotoPosition(AXIS.TILT, Float.parseFloat(GOTOTiltPos.getText()));
-		GotoTiltStop.setEnabled(false);
-		GotoTiltStart.setEnabled(true);
 		Parent.WriteLogtoConsole("Stopped Tilt GOTO");
 	}
 
