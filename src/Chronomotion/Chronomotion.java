@@ -42,9 +42,10 @@ public class Chronomotion {
 
 	private MainWindow MWindow;
 	private ConnectWindow ConWindow;
-
+	
 	private CommunicationManager MerlinController;
 	private int Debuglevel = 3;
+	private org.fusesource.jansi.AnsiConsole AnsiConsole;
 
 	/**
 	 * Launch the application.
@@ -88,6 +89,9 @@ public class Chronomotion {
 		// frame.add(MWindow);
 
 		MerlinController = new CommunicationManager(this);
+		
+		AnsiConsole = new org.fusesource.jansi.AnsiConsole();
+		AnsiConsole.systemInstall();
 	}
 
 	public ConnectWindow GetConnectWindow() {
