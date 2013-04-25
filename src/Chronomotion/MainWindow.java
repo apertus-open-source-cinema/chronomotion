@@ -272,7 +272,7 @@ public class MainWindow implements Runnable {
 		GOTOPanel = new JPanel();
 		GOTOPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Go to Position [degrees]", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		frame.getContentPane().add(GOTOPanel, "flowx,cell 2 0,alignx left,aligny top");
-		GOTOPanel.setLayout(new MigLayout("", "[18px][44.00px][57px][55px]", "[23px][23px]"));
+		GOTOPanel.setLayout(new MigLayout("", "[18px][44.00px][57px]", "[23px][23px][]"));
 
 		lblPan_1 = new JLabel("Pan [\u00B0]");
 		GOTOPanel.add(lblPan_1, "cell 0 0,alignx right,aligny center");
@@ -282,21 +282,13 @@ public class MainWindow implements Runnable {
 		GOTOPanPos.setText("0");
 		GOTOPanPos.setColumns(10);
 
-		GotoPanStart = new JButton("Start");
-		GotoPanStart.addMouseListener(new MouseAdapter() {
+		GotoStart = new JButton("Start");
+		GotoStart.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
-				GotoPanStartMousePressed(e);
+				GotoStartMousePressed(e);
 			}
 		});
-		GOTOPanel.add(GotoPanStart, "cell 2 0,alignx center,aligny center");
-
-		GotoPanStop = new JButton("Stop");
-		GotoPanStop.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				GotoPanStopMousePressed(e);
-			}
-		});
-		GOTOPanel.add(GotoPanStop, "cell 3 0,alignx center,aligny center");
+		GOTOPanel.add(GotoStart, "cell 2 0,alignx center,aligny center");
 
 		lblTilt_1 = new JLabel("Tilt [\u00B0]");
 		GOTOPanel.add(lblTilt_1, "cell 0 1,alignx right,aligny center");
@@ -306,113 +298,114 @@ public class MainWindow implements Runnable {
 		GOTOTiltPos.setText("0");
 		GOTOTiltPos.setColumns(10);
 
-		GotoTiltStart = new JButton("Start");
-		GotoTiltStart.addMouseListener(new MouseAdapter() {
+		GotoStop = new JButton("Stop");
+		GotoStop.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
-				GotoTiltStartMousePressed(e);
+				GotoStopMousePressed(e);
 			}
 		});
-		GOTOPanel.add(GotoTiltStart, "cell 2 1,alignx center,aligny center");
+		GOTOPanel.add(GotoStop, "cell 2 1,alignx center,aligny center");
 
-		GotoTiltStop = new JButton("Stop");
-		GotoTiltStop.addMouseListener(new MouseAdapter() {
+		GotoLoadFromCti = new JButton("load from CTI");
+		GotoLoadFromCti.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
-				GotoTiltStopMousePressed(e);
+				GotoLoadFromCtiMousePressed(e);
 			}
 		});
-		GOTOPanel.add(GotoTiltStop, "cell 3 1,alignx center,aligny center");
-		
-				TimelapseParameterPanel = new JPanel();
-				TimelapseParameterPanel.setBorder(new TitledBorder(null, "Time Lapse Parameters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-				frame.getContentPane().add(TimelapseParameterPanel, "cell 2 1,alignx left,aligny top");
-				TimelapseParameterPanel.setLayout(new MigLayout("", "[140px][54.00px,grow][10px][][57.00,grow]", "[20px][20px][]"));
-				
-						lblNewLabel_2 = new JLabel("Shutter Period [seconds]");
-						lblNewLabel_2.setHorizontalAlignment(SwingConstants.LEFT);
-						TimelapseParameterPanel.add(lblNewLabel_2, "cell 0 0,grow");
-						
-								ShutterPeriod = new JTextField();
-								ShutterPeriod.addPropertyChangeListener(new PropertyChangeListener() {
-									public void propertyChange(PropertyChangeEvent evt) {
-										ShutterPeriodUpdate();
-									}
-								});
-								ShutterPeriod.addActionListener(new ActionListener() {
-									public void actionPerformed(ActionEvent e) {
-										ShutterPeriodUpdate();
-									}
-								});
-								ShutterPeriod.getDocument().addDocumentListener(new DocumentListener() {
-									public void changedUpdate(DocumentEvent e) {
-										ShutterPeriodUpdate();
-									}
 
-									public void removeUpdate(DocumentEvent e) {
-										ShutterPeriodUpdate();
-									}
+		GOTOPanel.add(GotoLoadFromCti, "cell 0 2 2 1");
 
-									public void insertUpdate(DocumentEvent e) {
-										ShutterPeriodUpdate();
-									}
-								});
-								
-										ShutterPeriod.setText("15");
-										TimelapseParameterPanel.add(ShutterPeriod, "cell 1 0,grow");
-										ShutterPeriod.setColumns(10);
-										
-										lblProjectSettings = new JLabel("Project Settings");
-										TimelapseParameterPanel.add(lblProjectSettings, "cell 3 0,alignx left");
-										
-										comboBox = new JComboBox();
-										comboBox.setModel(new DefaultComboBoxModel(new String[] {"24 FPS", "25 FPS", "29.97 FPS", "48 FPS", "60 FPS"}));
-										TimelapseParameterPanel.add(comboBox, "cell 4 0,growx");
-										
-												lblNewLabel_3 = new JLabel("Post Shutter Delay [seconds]");
-												lblNewLabel_3.setHorizontalAlignment(SwingConstants.LEFT);
-												TimelapseParameterPanel.add(lblNewLabel_3, "cell 0 1,grow");
-												
-														PostShutterDelay = new JTextField();
-														PostShutterDelay.addActionListener(new ActionListener() {
-															public void actionPerformed(ActionEvent arg0) {
-																PostShutterDelayUpdate();
-															}
-														});
-														PostShutterDelay.addPropertyChangeListener(new PropertyChangeListener() {
-															public void propertyChange(PropertyChangeEvent arg0) {
-																PostShutterDelayUpdate();
-															}
-														});
-														PostShutterDelay.getDocument().addDocumentListener(new DocumentListener() {
-															public void changedUpdate(DocumentEvent e) {
-																PostShutterDelayUpdate();
-															}
+		TimelapseParameterPanel = new JPanel();
+		TimelapseParameterPanel.setBorder(new TitledBorder(null, "Time Lapse Parameters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		frame.getContentPane().add(TimelapseParameterPanel, "cell 2 1,alignx left,aligny top");
+		TimelapseParameterPanel.setLayout(new MigLayout("", "[140px][54.00px,grow][10px][][57.00,grow]", "[20px][20px][]"));
 
-															public void removeUpdate(DocumentEvent e) {
-																PostShutterDelayUpdate();
-															}
+		lblNewLabel_2 = new JLabel("Shutter Period [seconds]");
+		lblNewLabel_2.setHorizontalAlignment(SwingConstants.LEFT);
+		TimelapseParameterPanel.add(lblNewLabel_2, "cell 0 0,grow");
 
-															public void insertUpdate(DocumentEvent e) {
-																PostShutterDelayUpdate();
-															}
-														});
-														PostShutterDelay.setText("2");
-														TimelapseParameterPanel.add(PostShutterDelay, "cell 1 1,grow");
-														PostShutterDelay.setColumns(10);
-														
-														lblVideoDuration = new JLabel("Video Duration");
-														TimelapseParameterPanel.add(lblVideoDuration, "cell 3 1,alignx left");
-														
-														textField_1 = new JTextField();
-														TimelapseParameterPanel.add(textField_1, "cell 4 1,growx");
-														textField_1.setColumns(10);
-														
-														lblFrames = new JLabel("Frames");
-														lblFrames.setHorizontalAlignment(SwingConstants.LEFT);
-														TimelapseParameterPanel.add(lblFrames, "cell 0 2,grow");
-														
-														textField = new JTextField();
-														TimelapseParameterPanel.add(textField, "cell 1 2,growx");
-														textField.setColumns(10);
+		ShutterPeriod = new JTextField();
+		ShutterPeriod.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent evt) {
+				ShutterPeriodUpdate();
+			}
+		});
+		ShutterPeriod.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ShutterPeriodUpdate();
+			}
+		});
+		ShutterPeriod.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				ShutterPeriodUpdate();
+			}
+
+			public void removeUpdate(DocumentEvent e) {
+				ShutterPeriodUpdate();
+			}
+
+			public void insertUpdate(DocumentEvent e) {
+				ShutterPeriodUpdate();
+			}
+		});
+
+		ShutterPeriod.setText("15");
+		TimelapseParameterPanel.add(ShutterPeriod, "cell 1 0,grow");
+		ShutterPeriod.setColumns(10);
+
+		lblProjectSettings = new JLabel("Project Settings");
+		TimelapseParameterPanel.add(lblProjectSettings, "cell 3 0,alignx left");
+
+		comboBox = new JComboBox();
+		comboBox.setModel(new DefaultComboBoxModel(new String[] { "24 FPS", "25 FPS", "29.97 FPS", "48 FPS", "60 FPS" }));
+		TimelapseParameterPanel.add(comboBox, "cell 4 0,growx");
+
+		lblNewLabel_3 = new JLabel("Post Shutter Delay [seconds]");
+		lblNewLabel_3.setHorizontalAlignment(SwingConstants.LEFT);
+		TimelapseParameterPanel.add(lblNewLabel_3, "cell 0 1,grow");
+
+		PostShutterDelay = new JTextField();
+		PostShutterDelay.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				PostShutterDelayUpdate();
+			}
+		});
+		PostShutterDelay.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent arg0) {
+				PostShutterDelayUpdate();
+			}
+		});
+		PostShutterDelay.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				PostShutterDelayUpdate();
+			}
+
+			public void removeUpdate(DocumentEvent e) {
+				PostShutterDelayUpdate();
+			}
+
+			public void insertUpdate(DocumentEvent e) {
+				PostShutterDelayUpdate();
+			}
+		});
+		PostShutterDelay.setText("2");
+		TimelapseParameterPanel.add(PostShutterDelay, "cell 1 1,grow");
+		PostShutterDelay.setColumns(10);
+
+		lblVideoDuration = new JLabel("Video Duration");
+		TimelapseParameterPanel.add(lblVideoDuration, "cell 3 1,alignx left");
+
+		textField_1 = new JTextField();
+		TimelapseParameterPanel.add(textField_1, "cell 4 1,growx");
+		textField_1.setColumns(10);
+
+		lblFrames = new JLabel("Frames");
+		lblFrames.setHorizontalAlignment(SwingConstants.LEFT);
+		TimelapseParameterPanel.add(lblFrames, "cell 0 2,grow");
+
+		textField = new JTextField();
+		TimelapseParameterPanel.add(textField, "cell 1 2,growx");
+		textField.setColumns(10);
 
 		AnimationPanel = new JPanel();
 		AnimationPanel.setBorder(new TitledBorder(null, "Animation", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -518,7 +511,7 @@ public class MainWindow implements Runnable {
 				TimelineDelPressed(e);
 			}
 		});
-		
+
 		TimelineAdd = new JButton("add");
 		TimelineAdd.addMouseListener(new MouseAdapter() {
 			@Override
@@ -657,41 +650,41 @@ public class MainWindow implements Runnable {
 		SliderScaleX.setMaximum(300);
 		SliderScaleX.setPaintTicks(true);
 		AnimationPanel.add(SliderScaleX, "cell 2 4 13 1,growx");
-		
-				InfoPanel = new JPanel();
-				InfoPanel.setBorder(new TitledBorder(null, "Information", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-				frame.getContentPane().add(InfoPanel, "cell 2 0,alignx left,aligny top");
-				InfoPanel.setLayout(new MigLayout("", "[60.00][38.00][28.00][][][45.00]", "[][]"));
-				
-						lblPosition = new JLabel("Position");
-						InfoPanel.add(lblPosition, "cell 0 0");
-						
-								lblPan = new JLabel("Pan");
-								InfoPanel.add(lblPan, "cell 1 0");
-								
-										lblPosPanDegrees = new JLabel("...");
-										InfoPanel.add(lblPosPanDegrees, "cell 2 0");
-										
-												lblTilt = new JLabel("Tilt");
-												InfoPanel.add(lblTilt, "cell 4 0");
-												
-														lblPosTiltDegrees = new JLabel("...");
-														InfoPanel.add(lblPosTiltDegrees, "cell 5 0");
-														
-																lblSpeed = new JLabel("Speed [\u00B0/Min]");
-																InfoPanel.add(lblSpeed, "cell 0 1");
-																
-																		label = new JLabel("Pan");
-																		InfoPanel.add(label, "cell 1 1");
-																		
-																				lblSpeedPanDegrees = new JLabel("...");
-																				InfoPanel.add(lblSpeedPanDegrees, "cell 2 1");
-																				
-																						label_1 = new JLabel("Tilt");
-																						InfoPanel.add(label_1, "cell 4 1");
-																						
-																								lblSpeedTiltDegrees = new JLabel("...");
-																								InfoPanel.add(lblSpeedTiltDegrees, "cell 5 1");
+
+		InfoPanel = new JPanel();
+		InfoPanel.setBorder(new TitledBorder(null, "Information", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		frame.getContentPane().add(InfoPanel, "cell 2 0,alignx left,aligny top");
+		InfoPanel.setLayout(new MigLayout("", "[60.00][38.00][28.00][][][45.00]", "[][]"));
+
+		lblPosition = new JLabel("Position");
+		InfoPanel.add(lblPosition, "cell 0 0");
+
+		lblPan = new JLabel("Pan");
+		InfoPanel.add(lblPan, "cell 1 0");
+
+		lblPosPanDegrees = new JLabel("...");
+		InfoPanel.add(lblPosPanDegrees, "cell 2 0");
+
+		lblTilt = new JLabel("Tilt");
+		InfoPanel.add(lblTilt, "cell 4 0");
+
+		lblPosTiltDegrees = new JLabel("...");
+		InfoPanel.add(lblPosTiltDegrees, "cell 5 0");
+
+		lblSpeed = new JLabel("Speed [\u00B0/Min]");
+		InfoPanel.add(lblSpeed, "cell 0 1");
+
+		label = new JLabel("Pan");
+		InfoPanel.add(label, "cell 1 1");
+
+		lblSpeedPanDegrees = new JLabel("...");
+		InfoPanel.add(lblSpeedPanDegrees, "cell 2 1");
+
+		label_1 = new JLabel("Tilt");
+		InfoPanel.add(label_1, "cell 4 1");
+
+		lblSpeedTiltDegrees = new JLabel("...");
+		InfoPanel.add(lblSpeedTiltDegrees, "cell 5 1");
 		SliderScaleX.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
 			public void mouseDragged(java.awt.event.MouseEvent evt) {
 				SliderScaleXUpdate();
@@ -749,10 +742,8 @@ public class MainWindow implements Runnable {
 	private JLabel lblTilt_1;
 	private JTextField GOTOPanPos;
 	private JTextField GOTOTiltPos;
-	private JButton GotoPanStart;
-	private JButton GotoPanStop;
-	private JButton GotoTiltStart;
-	private JButton GotoTiltStop;
+	private JButton GotoStart;
+	private JButton GotoStop;
 	private JPanel TimelapseParameterPanel;
 	private JLabel lblNewLabel_2;
 	private JTextField ShutterPeriod;
@@ -907,24 +898,22 @@ public class MainWindow implements Runnable {
 		Parent.WriteLogtoConsole("Stopped Manual Motion");
 	}
 
-	private void GotoPanStartMousePressed(java.awt.event.MouseEvent evt) {
+	private void GotoStartMousePressed(java.awt.event.MouseEvent evt) {
 		Parent.GetMerlinController().GotoPosition(AXIS.PAN, Float.parseFloat(GOTOPanPos.getText()));
-		Parent.WriteLogtoConsole("Started Pan GOTO Position: " + Float.parseFloat(GOTOPanPos.getText()));
-	}
-
-	private void GotoTiltStartMousePressed(java.awt.event.MouseEvent evt) {
 		Parent.GetMerlinController().GotoPosition(AXIS.TILT, Float.parseFloat(GOTOTiltPos.getText()));
-		Parent.WriteLogtoConsole("Started Tilt GOTO Position: " + Float.parseFloat(GOTOPanPos.getText()));
+		//Parent.WriteLogtoConsole("Started GOTO Position: Pan " + Float.parseFloat(GOTOPanPos.getText()) + " ° | Tilt: " + GOTOTiltPos.getText() + " °");
 	}
 
-	private void GotoPanStopMousePressed(java.awt.event.MouseEvent evt) {
-		Parent.GetMerlinController().GotoPosition(AXIS.PAN, Float.parseFloat(GOTOPanPos.getText()));
-		Parent.WriteLogtoConsole("Stopped Pan GOTO");
+	private void GotoStopMousePressed(java.awt.event.MouseEvent evt) {
+		Parent.GetMerlinController().StopMotor(AXIS.PAN);
+		Parent.GetMerlinController().StopMotor(AXIS.TILT);
+
+		Parent.WriteLogtoConsole("Stopped GOTO");
 	}
 
-	private void GotoTiltStopMousePressed(java.awt.event.MouseEvent evt) {
-		Parent.GetMerlinController().GotoPosition(AXIS.TILT, Float.parseFloat(GOTOTiltPos.getText()));
-		Parent.WriteLogtoConsole("Stopped Tilt GOTO");
+	private void GotoLoadFromCtiMousePressed(java.awt.event.MouseEvent evt) {
+		GOTOTiltPos.setText(timeline1.GetTargetValue(timeline1.getEvaluateTime(), "Tilt") + "");
+		GOTOPanPos.setText(timeline1.GetTargetValue(timeline1.getEvaluateTime(), "Pan") + "");
 	}
 
 	private void TimelineStartPressed(java.awt.event.MouseEvent evt) {
@@ -961,6 +950,7 @@ public class MainWindow implements Runnable {
 	private JTextField textField;
 	private JTextField textField_1;
 	private JButton TimelineAdd;
+	private JButton GotoLoadFromCti;
 
 	private void TimelineNextKeyframePressed(java.awt.event.MouseEvent evt) {
 		highlightindex++;
@@ -980,14 +970,14 @@ public class MainWindow implements Runnable {
 		TimelineHighlightKeyframeChangeUpdate();
 		timeline1.Redraw();
 	}
-	
+
 	public void TimelineHighlightKeyframeChange(UUID uuid) {
 		timeline1.SetKeyframeHighlight(uuid);
-		highlightindex = timeline1.GetKeyframeIndex(uuid)-1;
+		highlightindex = timeline1.GetKeyframeIndex(uuid) - 1;
 		TimelineHighlightKeyframeChangeUpdate();
 		timeline1.Redraw();
 	}
-	
+
 	public void TimelineHighlightKeyframeChangeUpdate() {
 		TimelineEditValue.setText(timeline1.GetKeyframe(timeline1.GetActiveChannel(), highlightindex).GetParameter(timeline1.GetActiveChannel()) + "");
 		TimelineEditTime.setText(timeline1.GetTime(timeline1.GetActiveChannel(), highlightindex) + "");
@@ -1015,16 +1005,17 @@ public class MainWindow implements Runnable {
 	}
 
 	/*
-	 * Add a new keyframe to the current active channel at the current time indicator (CTI) with the value the curve has at that point.
+	 * Add a new keyframe to the current active channel at the current time
+	 * indicator (CTI) with the value the curve has at that point.
 	 */
 	private void TimelineAddPressed(java.awt.event.MouseEvent evt) {
 		UUID mykeyframe = timeline1.AddKeyFrame(timeline1.getEvaluateTime(), timeline1.GetActiveChannel(), timeline1.GetTargetValue(timeline1.getEvaluateTime(), timeline1.GetActiveChannel()));
-			
+
 		TimelineHighlightKeyframeChange(mykeyframe);
-		
+
 		timeline1.Redraw();
 	}
-	
+
 	/*
 	 * Delete the currently active (hightlighted) keyframe
 	 */
