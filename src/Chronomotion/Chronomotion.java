@@ -42,8 +42,8 @@ public class Chronomotion {
 
 	private MainWindow MWindow;
 	private ConnectWindow ConWindow;
-	
-	private CommunicationManager MerlinController;
+
+	private static CommunicationManager MerlinController;
 	private int Debuglevel = 3;
 	private org.fusesource.jansi.AnsiConsole AnsiConsole;
 
@@ -63,6 +63,19 @@ public class Chronomotion {
 					Chronomotion window = new Chronomotion();
 					window.ProcessArgs(args);
 				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+
+		// When exiting Chronomotion
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				System.out.println("Disconnecting COM Ports");
+				try {
+					GetMerlinController().disconnect();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -89,7 +102,7 @@ public class Chronomotion {
 		// frame.add(MWindow);
 
 		MerlinController = new CommunicationManager(this);
-		
+
 		AnsiConsole = new org.fusesource.jansi.AnsiConsole();
 		AnsiConsole.systemInstall();
 	}
@@ -167,7 +180,7 @@ public class Chronomotion {
 		}
 	}
 
-	public CommunicationManager GetMerlinController() {
+	public static CommunicationManager GetMerlinController() {
 		return MerlinController;
 	}
 }

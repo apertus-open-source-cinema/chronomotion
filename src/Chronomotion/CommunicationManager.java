@@ -33,6 +33,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import javax.bluetooth.*;
+
+import java.util.Vector;
 
 public class CommunicationManager implements Runnable {
 
@@ -41,6 +44,7 @@ public class CommunicationManager implements Runnable {
 	private OutputStream out;
 	private boolean _readytosend;
 	private SerialPort serialPort;
+	private Vector _BTdevicesDiscovered;
 	private Thread Watcher;
 	private int[] _TotalSteps;
 	private int[] _CurrentSteps;
@@ -57,6 +61,7 @@ public class CommunicationManager implements Runnable {
 		_TotalSteps[1] = 1; // to prevent division by zero
 		_CurrentSteps = new int[2];
 		_SiderealRate = new int[2];
+		_BTdevicesDiscovered = new Vector();
 
 		Parent = parent;
 	}
@@ -313,10 +318,23 @@ public class CommunicationManager implements Runnable {
 		ExecuteCommand(":D" + TranslateAxis(axis) + "\r");
 	}
 
-	public void Init(String Port) {
+	public void InitSerial(String Port) {
 
 		try {
-			connect(Port);
+			connectSerial(Port);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		Watcher = new Thread(this);
+		Watcher.start();
+
+		InitAxisPositions();
+	}
+
+	public void InitBT(String Port) {
+
+		try {
+			connectBT(Port);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -384,9 +402,9 @@ public class CommunicationManager implements Runnable {
 	 */
 	public static ArrayList<CommPortIdentifier> getAvailableSerialPorts() {
 		ArrayList<CommPortIdentifier> h = new ArrayList();
-		Enumeration thePorts = CommPortIdentifier.getPortIdentifiers();
-		while (thePorts.hasMoreElements()) {
-			CommPortIdentifier com = (CommPortIdentifier) thePorts.nextElement();
+		Enumeration AllPorts = CommPortIdentifier.getPortIdentifiers();
+		while (AllPorts.hasMoreElements()) {
+			CommPortIdentifier com = (CommPortIdentifier) AllPorts.nextElement();
 			switch (com.getPortType()) {
 			case CommPortIdentifier.PORT_SERIAL:
 				try {
@@ -404,7 +422,61 @@ public class CommunicationManager implements Runnable {
 		return h;
 	}
 
-	public void connect(String portName) throws Exception {
+	public Vector GetAvailableBluetoothPorts() {
+		return _BTdevicesDiscovered;
+	}
+
+	public void InquireAvailableBluetoothPorts() {
+		final Object inquiryCompletedEvent = new Object();
+		_BTdevicesDiscovered.clear();
+		DiscoveryListener listener = new DiscoveryListener() {
+
+			public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod) {
+				System.out.println("Device " + btDevice.getBluetoothAddress() + " found");
+				_BTdevicesDiscovered.addElement(btDevice);
+				try {
+					System.out.println("     name: " + btDevice.getFriendlyName(false));
+				} catch (IOException cantGetDeviceName) {
+				}
+			}
+
+			public void inquiryCompleted(int discType) {
+				System.out.println("Device Inquiry completed!");
+				synchronized (inquiryCompletedEvent) {
+					inquiryCompletedEvent.notifyAll();
+				}
+			}
+
+			public void serviceSearchCompleted(int transID, int respCode) {
+			}
+
+			public void servicesDiscovered(int transID, ServiceRecord[] servRecord) {
+			}
+		};
+
+		synchronized (inquiryCompletedEvent) {
+			boolean started = false;
+			try {
+				started = LocalDevice.getLocalDevice().getDiscoveryAgent().startInquiry(DiscoveryAgent.GIAC, listener);
+			} catch (BluetoothStateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (started) {
+				System.out.println("wait for device inquiry to complete...");
+				try {
+					inquiryCompletedEvent.wait();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.out.println(_BTdevicesDiscovered.size() + " device(s) found");
+			}
+
+		}
+	}
+
+	public void connectSerial(String portName) throws Exception {
 		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
 
 		if (portIdentifier.isCurrentlyOwned()) {
@@ -424,6 +496,36 @@ public class CommunicationManager implements Runnable {
 			} else {
 				System.out.println("Error: Only serial ports are handled by this example.");
 			}
+		}
+	}
+
+	public void connectBT(String portName) throws Exception {
+		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
+
+		if (portIdentifier.isCurrentlyOwned()) {
+			System.out.println("Error: Port is currently in use");
+		} else {
+			CommPort commPort = portIdentifier.open(this.getClass().getName(), 2000);
+			if (commPort instanceof SerialPort) {
+				serialPort = (SerialPort) commPort;
+				serialPort.setSerialPortParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+
+				in = serialPort.getInputStream();
+				out = serialPort.getOutputStream();
+
+				serialPort.addEventListener(new SerialReader(in, this));
+				serialPort.notifyOnDataAvailable(true);
+				Connected = true;
+			} else {
+				System.out.println("Error: Only serial ports are handled by this example.");
+			}
+		}
+	}
+
+	public void disconnect() throws Exception {
+		if (serialPort != null) {
+			// Close the port
+			serialPort.close();
 		}
 	}
 
@@ -453,10 +555,12 @@ public class CommunicationManager implements Runnable {
 					_buffer[len++] = (byte) data;
 				}
 				String line = new String(_buffer, 0, len);
+
 				// debuging
 				if (debug_serial_commands) {
 					System.out.println(line);
 				}
+
 				String[] commands;
 				commands = line.split("@");
 				_CommandsList.addAll(Arrays.asList(commands));

@@ -28,6 +28,7 @@ package Chronomotion;
 
 import gnu.io.CommPortIdentifier;
 
+import javax.bluetooth.RemoteDevice;
 import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -38,13 +39,30 @@ import javax.swing.JLabel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Vector;
+
+import net.miginfocom.swing.MigLayout;
+import java.awt.Font;
+import java.io.IOException;
+
+import javax.swing.ButtonGroup;
+import javax.swing.ComboBoxModel;
+import javax.swing.JRadioButton;
+import javax.swing.ListSelectionModel;
+import javax.swing.AbstractListModel;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 public class ConnectWindow {
 
 	private Chronomotion Parent;
 	private JDialog frame;
 	private JList ComPortList;
+	private JComboBox BTDevicesBox;
+	private DefaultComboBoxModel BTPortListModel;
 	private DefaultListModel ComPortListModel;
+	private JRadioButton rdbtnCableConnection;
+	private JRadioButton rdbtnBluetoothConnection;
 
 	public ConnectWindow(Chronomotion parent) {
 
@@ -57,23 +75,52 @@ public class ConnectWindow {
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Connect();
+				frame.dispose(); // close the JDialog
 			}
 		});
-		frame.getContentPane().add(btnNewButton, BorderLayout.SOUTH);
+		frame.getContentPane().setLayout(new MigLayout("", "[27px][407px,grow]", "[][239px][][][grow][23px]"));
+
+		rdbtnCableConnection = new JRadioButton("Serial Cable Connection");
+		rdbtnCableConnection.setSelected(true);
+		frame.getContentPane().add(rdbtnCableConnection, "flowx,cell 0 0 2 1");
+
+		rdbtnBluetoothConnection = new JRadioButton("Bluetooth Connection");
+		frame.getContentPane().add(rdbtnBluetoothConnection, "cell 0 2 2 1");
+
+		ButtonGroup ConnectionSelection = new ButtonGroup();
+		ConnectionSelection.add(rdbtnCableConnection);
+		ConnectionSelection.add(rdbtnBluetoothConnection);
+
+		BTDevicesBox = new JComboBox();
+
+		frame.getContentPane().add(BTDevicesBox, "cell 1 3,growx");
+		frame.getContentPane().add(btnNewButton, "cell 0 5 2 1,growx,aligny top");
 
 		JLabel lblConnect = new JLabel("Port: ");
-		frame.getContentPane().add(lblConnect, BorderLayout.WEST);
+		frame.getContentPane().add(lblConnect, "cell 0 1,alignx left,growy");
 
 		ComPortList = new JList();
-		frame.getContentPane().add(ComPortList, BorderLayout.CENTER);
+		frame.getContentPane().add(ComPortList, "cell 1 1,grow");
 	}
 
 	public void Connect() {
-		Parent.GetMerlinController().Init(ComPortList.getSelectedValue().toString());
+		
+		if (rdbtnCableConnection.isSelected()) { // Is the Radiobutton to use Serial connection checked?
+			if (!ComPortList.isSelectionEmpty()) { // Is a COM port selected?
+				Parent.GetMerlinController().InitSerial(ComPortList.getSelectedValue().toString());
+			}
+		}
+		
+		if (rdbtnBluetoothConnection.isSelected()) { // Is the Radiobutton to use Bluetooth connection checked?
+			if (true) { // TODO: Is a device detected?
+				Parent.GetMerlinController().InitBT(BTDevicesBox.getSelectedItem().toString());
+			}
+		}
 		this.Show(false);
 	}
 
 	public void Load() {
+		// Find all Serial COM Ports
 		ArrayList<CommPortIdentifier> h = Parent.GetMerlinController().getAvailableSerialPorts();
 		ComPortListModel = new DefaultListModel();
 		if (h.size() == 0) {
@@ -84,6 +131,24 @@ public class ConnectWindow {
 			}
 		}
 		ComPortList.setModel(ComPortListModel);
+
+		// Find all Bluetooth devices
+		Parent.GetMerlinController().InquireAvailableBluetoothPorts();
+		Vector BTdevicelist = Parent.GetMerlinController().GetAvailableBluetoothPorts();
+		BTPortListModel = new DefaultComboBoxModel();
+		if (BTdevicelist.size() == 0) {
+			BTPortListModel.addElement("No Bluetooth device detected");
+		} else {
+			for (int i = 0; i < BTdevicelist.size(); i++) {
+				try {
+					BTPortListModel.addElement(BTdevicelist.get(i).toString() + " - " + (((RemoteDevice) BTdevicelist.get(i)).getFriendlyName(false)));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		BTDevicesBox.setModel(BTPortListModel);
 	}
 
 	public void Show(boolean show) {
